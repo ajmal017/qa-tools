@@ -37,7 +37,7 @@ class WebDataprovider:
                 dataframes = dataframes.append(df)
 
             sorted = dataframes.sort_index()
-            print(sorted)
+            #print(sorted)
             return sorted
         else:
             return transdat

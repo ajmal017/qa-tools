@@ -10,7 +10,8 @@ class WebDataprovider:
     """
 
     def __init__(self, cache_name='cache', expire_days=3):
-        expire_after = timedelta(days=expire_days)
+        expire_after = (None if expire_days is None else timedelta(days=expire_days))
+
         self.session = requests_cache.CachedSession(cache_name=cache_name, backend='sqlite', expire_after=expire_after)
 
     def get_data(self,ticker, from_date, to_date, timeframe='day', provider='google'):

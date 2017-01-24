@@ -2,6 +2,7 @@
 from dataprovider.web_dataprovider import WebDataprovider
 
 
-class LocalDataprovider(WebDataprovider):
+class TestDataprovider(WebDataprovider):
     def __init__(self):
-        super(LocalDataprovider,self).__init__(cache_name='test_data',expire_days=None)
+        super(TestDataprovider, self).__init__(cache_name='test_data', expire_days=0)
+

@@ -10,7 +10,7 @@ class WebDataprovider:
     """
 
     def __init__(self, cache_name='cache', expire_days=3):
-        expire_after = (None if expire_days is None else timedelta(days=expire_days))
+        expire_after = (None if expire_days is (None or 0) else timedelta(days=expire_days))
 
         self.session = requests_cache.CachedSession(cache_name=cache_name, backend='sqlite', expire_after=expire_after)
 
@@ -23,7 +23,7 @@ class WebDataprovider:
         #                      session=self.session)
         start = datetime.strptime(from_date, "%Y-%m-%d")
         end = datetime.strptime(to_date, "%Y-%m-%d")
-        data = web.DataReader(ticker, provider, start=start, end=end, session=self.session)
+        data = web.DataReader(ticker, provider, start=start, end=end, session=self.session,pause=1)
 
         # From: http://blog.yhat.com/posts/stock-data-python.html
         transdat = data.loc[:, ["Open", "High", "Low", "Close"]]

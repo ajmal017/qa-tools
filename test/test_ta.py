@@ -1,9 +1,9 @@
-from dataprovider.local_dataprovider import LocalDataprovider
+from dataprovider.local_dataprovider import TestDataprovider
 from technical_analysis import ta
 
 class TestTechnicalAnalysis:
 
-    local_provider = LocalDataprovider()
+    local_provider = TestDataprovider()
 
     def test_ma_slope(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')
@@ -15,4 +15,16 @@ class TestTechnicalAnalysis:
 
         assert -1 == df.loc['20160115'][ta.ma_slope_column_name(50)]
 
+    def test_highest(self):
+        spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')
+        assert ta.highest(spy_daily.loc[:'20161205']['Close']) < 50
 
+        #for index, row in spy_daily.iterrows():
+        #    print(index,":", row['Close'], " ", ta.highest(spy_daily.loc[:index]['Close']))
+
+    def test_lowest(self):
+        spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')
+        assert ta.lowest(spy_daily.loc[:'20161222']['Close']) == 3
+
+        #for index, row in spy_daily.iterrows():
+        #    print(index,":", row['Close'], " ", ta.lowest(spy_daily.loc[:index]['Close']))

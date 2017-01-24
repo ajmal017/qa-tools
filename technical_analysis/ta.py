@@ -26,3 +26,24 @@ def dates_below_ma(ma, dataframe):
             dates.append(row.name.date().__str__())
 
     return dates
+
+def highest(df):
+    """ Get the highest order of the last entry """
+
+    last = df.ix[len(df) - 1]
+    for i in range(0,len(df)-1):
+        cmp = df.ix[len(df)-2-i]
+        if (cmp > last):
+            return i
+    return len(df)-1
+
+
+def lowest(df):
+    """ Get the lowest order of the last entry """
+
+    last = df.ix[len(df) - 1]
+    for i in range(0,len(df)-1):
+        cmp = df.ix[len(df)-2-i]
+        if (cmp < last):
+            return i
+    return len(df)-1

@@ -1,5 +1,6 @@
 from dataprovider.local_dataprovider import TestDataprovider
 from technical_analysis import ta
+from technical_analysis.column_names import *
 
 class TestTechnicalAnalysis:
 
@@ -13,7 +14,7 @@ class TestTechnicalAnalysis:
 
         df = ta.add_ma_slope(spy_daily, 50)
 
-        assert -1 == df.loc['20160115'][ta.ma_slope_column_name(50)]
+        assert -1 == df.loc['20160115'][ta.ma_slope_name(50)]
 
     def test_highest(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')

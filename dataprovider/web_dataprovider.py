@@ -9,6 +9,10 @@ class WebDataprovider:
     """
     """
 
+    def __add_ticker(self, ticker, df):
+        df['Ticker'] = ticker
+        return df
+
     def __init__(self, cache_name='cache', expire_days=3):
         expire_after = (None if expire_days is (None or 0) else timedelta(days=expire_days))
 
@@ -38,9 +42,8 @@ class WebDataprovider:
                 dataframes = dataframes.append(df)
 
             sorted = dataframes.sort_index()
-            #print(sorted)
-            return sorted
+            return self.__add_ticker(ticker, sorted)
         else:
-            return transdat
+            return self.__add_ticker(ticker, transdat)
 
 

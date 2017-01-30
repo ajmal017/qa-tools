@@ -35,7 +35,7 @@ def hilo(kwargs):
             print("Skipping {ticker}: {error}".format(ticker=ticker, error=e))
     #df_list = [provider.get_data(ticker=ticker, from_date=kwargs['start'], to_date=kwargs['end']) for ticker in kwargs['tickers']]
 
-    res = internals.breadth_daily(df_list,int(kwargs['lookback']))
+    res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
     print(res)
 
 @click.command(options_metavar='<options>')

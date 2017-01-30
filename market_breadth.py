@@ -1,41 +1,90 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import datetime
 
-
+import click
 import pandas as pd
 
 from dataprovider.web_dataprovider import WebDataprovider
 import talib
-
-# Ex:
-# $ python breadth.py --function 200DMA --from 2010-01-01 --to 2017-01-22
-
-
-# Historical values:
-# Number of stocks below 200DMA
-# Number of stocks making new 50D high/low
-# Number of stocks making new 20D high/low
+from technical_analysis.market_internal import MarketInternals
 
 def get_tickers(file):
     with open(file) as f:
         return [ticker.rstrip() for ticker in f.readlines()]
 
-def breadth_new_highs(from_date, to_date):
-    provider = WebDataprovider('breadth',expire_days=0)
 
-    tickers = get_tickers('sp500.txt')
-    #tickers = ['MMM', 'ABT', 'ABBV', 'ACN', 'ATVI', 'AYI']
-    dataframes = []
+def breadth(kwargs):
+    #TODO: test redis and other backend storages
+    internals = MarketInternals()
+    provider = WebDataprovider(cache_name='breadth', expire_days=0)
 
-    for ticker in tickers:
+    print("breadth for {0}".format(kwargs['tickers']))
+
+def hilo(kwargs):
+    internals = MarketInternals()
+    provider = WebDataprovider(cache_name='breadth',expire_days=0)
+
+    print("hilo for {0}".format(kwargs['tickers']))
+
+    df_list = []
+    for ticker in kwargs['tickers']:
         try:
-            dataframes.append(provider.get_data(ticker,from_date,to_date))
+            df_list.append(provider.get_data(ticker,from_date=kwargs['start'], to_date=kwargs['end']))
         except Exception as e:
             print("Skipping {ticker}: {error}".format(ticker=ticker, error=e))
+    #df_list = [provider.get_data(ticker=ticker, from_date=kwargs['start'], to_date=kwargs['end']) for ticker in kwargs['tickers']]
 
-    mmm = dataframes[0]
-    output = talib.MOM(mmm['Close'], timeperiod=5)
+    res = internals.breadth_daily(df_list,int(kwargs['lookback']))
+    print(res)
 
+@click.command(options_metavar='<options>')
+@click.argument('function', metavar="<function>")
+@click.argument('lookback', metavar="<lookback>")
+@click.option('--start', default="2010-01-01", help='starting date.')
+@click.option('--end', default="today", help='ending date')
+@click.option('--tickers', default=False, help='Comma separated list of tickers')
+def market_internals(function, lookback, start, end, tickers):
+    """
+    Calculate market internals such as market breadth etc.
+
+    <function> parameter:
+
+    'hilo': to calculate all stocks making new <lookback> highs/lows
+    'breadth': calculate all stocks below/above <lookback> MA
+
+    <lookback> parameter:
+    """
+    if end is 'today':
+        end_datetime = datetime.datetime.now()
+    else:
+        end_datetime = datetime.datetime.strptime(end,'%Y-%M-%d')
+
+    start_datetime = datetime.datetime.strptime(start,'%Y-%M-%d')
+
+    args = {
+        'function':function,
+        'lookback':lookback,
+        'start_dt':start_datetime,
+        'start': start_datetime.strftime('%Y-%m-%d'),
+        'end_dt':end_datetime,
+        'end': end_datetime.strftime('%Y-%m-%d')
+    }
+
+    click.echo("{function}: {start} to {end} with lookack {lookback}".format(**args))
+
+    if not tickers:
+        click.echo("Tickers: all S&P500 stock")
+        args['tickers'] = get_tickers("sp500.txt")
+    else:
+        args['tickers'] = tickers.split(",")
+
+
+    if function == 'hilo':
+        hilo(args)
+
+    if function == 'breadth':
+        breadth()
 
 if __name__ == '__main__':
-    breadth_new_highs('2010-01-01','2017-01-01')
+    market_internals()

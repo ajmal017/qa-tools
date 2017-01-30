@@ -1,8 +1,8 @@
-from technical_analysis.market_internal import MarketInternals
 from dataprovider.local_dataprovider import TestDataprovider
-
 from technical_analysis import ta
 from technical_analysis.column_names import *
+from technical_analysis.market_internal import MarketInternals
+
 
 class TestMarketInternals:
 

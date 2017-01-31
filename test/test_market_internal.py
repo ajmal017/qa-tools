@@ -3,7 +3,7 @@ from technical_analysis import ta
 from technical_analysis.column_names import *
 from technical_analysis.market_internal import MarketInternals
 
-
+#TODO: switch to unittest
 class TestMarketInternals:
 
     testdata_provider = TestDataprovider()

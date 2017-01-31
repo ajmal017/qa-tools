@@ -49,19 +49,24 @@ class MarketInternals:
         end = datetime.strptime(to_date, "%Y-%m-%d")
 
         index = pd.date_range(start, end)
-        columns = [day_high_name(lookback), day_low_name(lookback)]
+        columns = [day_high_name(lookback), day_high_perc_name(lookback), day_low_name(lookback), day_low_perc_name(lookback)]
 
         sum = pd.DataFrame(index=index, columns=columns)
-        sum = sum.fillna(0)
+        sum = sum.fillna(0.0)
 
         for key, value in results.items():
             for high_date in value['highs']:
                 sum.set_value(high_date, day_high_name(lookback), sum.get_value(high_date, day_high_name(lookback)) + 1)
 
+                perc = float(sum.get_value(high_date, day_high_name(lookback))) / float((len(results)))
+                sum.set_value(high_date, day_high_perc_name(lookback), perc*100.0)
+
             for low_date in value['lows']:
                 sum.set_value(low_date, day_low_name(lookback), sum.get_value(low_date, day_low_name(lookback)) + 1)
 
-        #TODO: add percentage columns
+                perc = float(sum.get_value(low_date, day_low_name(lookback))) / float(len(results))
+                sum.set_value(low_date, day_low_perc_name(lookback), perc*100.0)
+
         return sum
 
 
@@ -89,8 +94,6 @@ class MarketInternals:
         results = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             tmp = {executor.submit(breadth_inner_parallel, df, results, lookback): df for df in tickers}
-
-        print("Threads done")
 
         res = self.__process_results(results, lookback, from_date, to_date)
 

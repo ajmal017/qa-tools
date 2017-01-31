@@ -22,6 +22,10 @@ class WebDataprovider:
 
         logger.info("Using cache '{0}' with {1} items. Expires ?".format(cache_name,len(self.session.cache.responses)))
 
+    def get_data_parallel(self, tickers, from_date, to_date, workers=2,timeframe='day',provider='google'):
+        #TODO: concurrent data fetching
+        pass
+
     def get_data(self,ticker, from_date, to_date, timeframe='day', provider='google'):
         logger.info("%s: %s to %s, provider=%s" % (ticker, from_date, to_date, provider))
 

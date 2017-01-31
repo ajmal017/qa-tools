@@ -32,14 +32,7 @@ def hilo(kwargs):
 
     logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
 
-    df_list = []
-    for ticker in kwargs['tickers']:
-        try:
-            df_list.append(provider.get_data(ticker, from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider']))
-        except Exception as e:
-            print("Skipping {ticker}: {error}".format(ticker=ticker, error=e))
-    # df_list = [provider.get_data(ticker=ticker, from_date=kwargs['start'], to_date=kwargs['end']) for ticker in kwargs['tickers']]
-
+    df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
     res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
     print(res)
 

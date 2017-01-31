@@ -1,8 +1,5 @@
 import concurrent.futures
-
-
 from datetime import datetime, timedelta
-
 
 import pandas as pd
 

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import logging as logger
+import concurrent.futures
 
 import pandas as pd
 import requests_cache
@@ -23,19 +24,28 @@ class WebDataprovider:
         logger.info("Using cache '{0}' with {1} items. Expires ?".format(cache_name, len(self.session.cache.responses)))
 
     def get_data_parallel(self, tickers, from_date, to_date, workers=2, timeframe='day', provider='google'):
-        # TODO: concurrent data fetching
+        """
+        Download data in parallel
+        """
+        dataframes = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {executor.submit(self.get_data, ticker, from_date, to_date, timeframe, provider): ticker for ticker in tickers}
+            for future in concurrent.futures.as_completed(futures):
+                ticker = futures[future]
+                try:
+                    data = future.result()
+                except Exception as exc:
+                    print("Skipping {ticker}: {error}".format(ticker=ticker, error=exc))
+                else:
+                    dataframes.append(data)
+
+
         # TODO: adding latest, i.e. current (delayed) price if market is open
-        pass
+        return dataframes
 
     def get_data(self, ticker, from_date, to_date, timeframe='day', provider='google'):
         """
         Note this will only get historical data.
-        :param ticker:
-        :param from_date:
-        :param to_date:
-        :param timeframe:
-        :param provider:
-        :return:
         """
         logger.info("%s: %s to %s, provider=%s" % (ticker, from_date, to_date, provider))
 

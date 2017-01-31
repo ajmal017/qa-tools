@@ -55,6 +55,7 @@ class MarketInternals:
         sum = sum.fillna(0.0)
 
         for key, value in results.items():
+
             for high_date in value['highs']:
                 sum.set_value(high_date, day_high_name(lookback), sum.get_value(high_date, day_high_name(lookback)) + 1)
 

@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import datetime
+import logging as logger
 
 import click
 import pandas as pd
+import talib
 
 from dataprovider.web_dataprovider import WebDataprovider
-import talib
 from technical_analysis.market_internal import MarketInternals
+
+
+logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
+
 
 def get_tickers(file):
     with open(file) as f:
@@ -19,13 +24,14 @@ def breadth(kwargs):
     internals = MarketInternals()
     provider = WebDataprovider(cache_name='breadth', expire_days=0)
 
-    print("breadth for {0}".format(kwargs['tickers']))
+    #logger.info("breadth for {0}".format(kwargs['tickers']))
+    logger.info("breadth for {0} tickers".format(len(kwargs['tickers'])))
 
 def hilo(kwargs):
     internals = MarketInternals()
     provider = WebDataprovider(cache_name='breadth',expire_days=0)
 
-    print("hilo for {0}".format(kwargs['tickers']))
+    logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
 
     df_list = []
     for ticker in kwargs['tickers']:
@@ -70,11 +76,9 @@ def market_internals(function, lookback, start, end, tickers):
         'end_dt':end_datetime,
         'end': end_datetime.strftime('%Y-%m-%d')
     }
-
-    click.echo("{function}: {start} to {end} with lookack {lookback}".format(**args))
+    logger.info("{function}: {start} to {end} with lookack {lookback}".format(**args))
 
     if not tickers:
-        click.echo("Tickers: all S&P500 stock")
         args['tickers'] = get_tickers("sp500.txt")
     else:
         args['tickers'] = tickers.split(",")

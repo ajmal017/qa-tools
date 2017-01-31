@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
+import logging as logger
 
-import time
 import pandas as pd
 import requests_cache
 import pandas_datareader.data as web
@@ -9,25 +9,25 @@ class WebDataprovider:
     """
     """
 
+    logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
+
+
     def __add_ticker(self, ticker, df):
         df['Ticker'] = ticker
         return df
 
     def __init__(self, cache_name='cache', expire_days=3):
         expire_after = (None if expire_days is (None or 0) else timedelta(days=expire_days))
-
         self.session = requests_cache.CachedSession(cache_name=cache_name, backend='sqlite', expire_after=expire_after)
 
+        logger.info("Using cache '{0}' with {1} items. Expires ?".format(cache_name,len(self.session.cache.responses)))
+
     def get_data(self,ticker, from_date, to_date, timeframe='day', provider='google'):
-        # TODO: info log
-        # TODO: log cache usage
-        print("%s: %s to %s, provider=%s, cached=%s" % (ticker, from_date, to_date, provider, self.session))
-        #data = web.DataReader(ticker, provider, start=datetime(2013,1,1),
-        #                      end=datetime(2016,12,31),
-        #                      session=self.session)
+        logger.info("%s: %s to %s, provider=%s" % (ticker, from_date, to_date, provider))
+
         start = datetime.strptime(from_date, "%Y-%m-%d")
         end = datetime.strptime(to_date, "%Y-%m-%d")
-        data = web.DataReader(ticker, provider, start=start, end=end, session=self.session,pause=1)
+        data = web.DataReader(ticker, provider, start=start, end=end, session=self.session, pause=1)
 
         # From: http://blog.yhat.com/posts/stock-data-python.html
         transdat = data.loc[:, ["Open", "High", "Low", "Close"]]

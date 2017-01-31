@@ -24,7 +24,6 @@ def breadth(kwargs):
     internals = MarketInternals()
     provider = WebDataprovider(cache_name='breadth', expire_days=0)
 
-    #logger.info("breadth for {0}".format(kwargs['tickers']))
     logger.info("breadth for {0} tickers".format(len(kwargs['tickers'])))
 
 def hilo(kwargs):
@@ -64,9 +63,9 @@ def market_internals(function, lookback, start, end, tickers):
     if end is 'today':
         end_datetime = datetime.datetime.now()
     else:
-        end_datetime = datetime.datetime.strptime(end,'%Y-%M-%d')
+        end_datetime = datetime.datetime.strptime(end,'%Y-%m-%d')
 
-    start_datetime = datetime.datetime.strptime(start,'%Y-%M-%d')
+    start_datetime = datetime.datetime.strptime(start,'%Y-%m-%d')
 
     args = {
         'function':function,

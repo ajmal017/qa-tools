@@ -7,7 +7,7 @@ import click
 import pandas as pd
 import talib
 
-from dataprovider.web_dataprovider import WebDataprovider
+from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis.market_internal import MarketInternals
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
@@ -21,14 +21,14 @@ def get_tickers(file):
 def breadth(kwargs):
     # TODO: test redis and other backend storages
     internals = MarketInternals()
-    provider = WebDataprovider(cache_name='breadth', expire_days=0)
+    provider = CachedDataProvider(cache_name='breadth', expire_days=0)
 
     logger.info("breadth for {0} tickers".format(len(kwargs['tickers'])))
 
 
 def hilo(kwargs):
     internals = MarketInternals()
-    provider = WebDataprovider(cache_name='breadth', expire_days=0)
+    provider = CachedDataProvider(cache_name='breadth', expire_days=0)
 
     logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
 

@@ -217,7 +217,7 @@ def test_cumulative_diff():
 
 if __name__ == '__main__':
     """
-    Specific analysis for VXX
+    Specific qa_tools for VXX
 
     Observations:
         1. Friday close to next fridays close seems a little bit better than O2C (61% instead of 60% wins)

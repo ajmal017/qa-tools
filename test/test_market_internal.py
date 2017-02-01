@@ -1,4 +1,3 @@
-from dataprovider.local_dataprovider import TestDataprovider
 from technical_analysis import ta
 from technical_analysis.column_names import *
 from technical_analysis.market_internal import MarketInternals
@@ -6,7 +5,7 @@ from technical_analysis.market_internal import MarketInternals
 #TODO: switch to unittest
 class TestMarketInternals:
 
-    testdata_provider = TestDataprovider()
+    local_provider = WebDataprovider(cache_name='test_data', expire_days=0)
 
     def test_market_breadth(self):
         aapl = self.testdata_provider.get_data(ticker="AAPL", from_date='2010-01-01', to_date='2017-01-01')

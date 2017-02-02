@@ -1,10 +1,11 @@
 
+from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis import ta
 from technical_analysis.column_names import *
 
 class TestTechnicalAnalysis:
 
-    local_provider = WebDataprovider(cache_name='test_data', expire_days=0)
+    local_provider = CachedDataProvider(cache_name='test_data', expire_days=0)
 
     def test_ma_slope(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')

@@ -3,3 +3,4 @@ click
 requests_cache
 pandas_datareader
 dataprovider
+matplotlib

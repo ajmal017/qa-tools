@@ -11,16 +11,6 @@ def add_ma_slope(dataframe, lookback):
     dataframe[ma_slope_name(lookback)] = (mean-mean.shift()).apply(lambda x: 1 if x > 0 else -1)
     return dataframe
 
-# Deprecated??
-# def dates_below_ma(ma, dataframe):
-#     dates = []
-#
-#     for index, row in dataframe.iterrows():
-#         if row['Close'] < row[ma_name(ma)]:
-#             dates.append(row.name.date().__str__())
-#
-#     return dates
-
 def highest(df):
     """ Get the highest order of the last entry """
 

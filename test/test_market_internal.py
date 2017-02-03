@@ -1,11 +1,13 @@
+import unittest
+
+from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis import ta
 from technical_analysis.column_names import *
 from technical_analysis.market_internal import MarketInternals
 
-#TODO: switch to unittest
-class TestMarketInternals:
+class TestMarketInternals(unittest.TestCase):
 
-    local_provider = WebDataprovider(cache_name='test_data', expire_days=0)
+    testdata_provider = CachedDataProvider(cache_name='test_data', expire_days=0,quote=False)
 
     def test_market_breadth(self):
         aapl = self.testdata_provider.get_data(ticker="AAPL", from_date='2010-01-01', to_date='2017-01-01')
@@ -34,3 +36,6 @@ class TestMarketInternals:
         assert 3 == breadth.loc['20161223'][above_dma_name(200)]
         assert 0 == breadth.loc['20161223'][below_dma_name(200)]
 
+
+if __name__ == '__main__':
+    unittest.main()

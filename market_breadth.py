@@ -37,15 +37,27 @@ def hilo(kwargs):
     logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
 
     df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
+
     #TODO: cache breadth_daily call in pickle file etc?
     res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
     if kwargs['plot']:
-        #TODO: add SPY to plot, left axis?
+        if kwargs['plot_vs']:
+            plot_vs = provider.get_data(kwargs['plot_vs'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
+            plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close':kwargs['plot_vs']})
 
         plot_data = res[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]]
+        plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
+        df = pd.concat([plot_vs,plot_data],axis=1, join='inner')
         matplotlib.style.use('ggplot')
 
-        plot_data.plot()
+        # Plot_vs as line and breadth as bar?
+        fig, ax = plt.subplots(2, 1)  # you can pass sharex=True, sharey=True if you want to share axes.
+        df[['SPY']].plot(kind='line', ax=ax[0])
+        df[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]].plot(ax=ax[1],style=['.',','],linestyle='None')
+
+        #TODO: Try Seaborn
+        #TODO: add markers on plot_vs (SPY) whene breadh above 10, 20, 30 etc
+
         plt.show()
     else:
         print(res[-3:])
@@ -61,7 +73,8 @@ def hilo(kwargs):
 @click.option('--provider',type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--quotes', is_flag=True, help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours.')
 @click.option('--plot', is_flag=True, help='Plot analyzed data')
-def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot):
+@click.option('--plot-vs', type=click.STRING, help='Plot analysis vs. stock/etf, e.g. SPY')
+def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot,plot_vs):
     """
     Calculate market internals such as market breadth etc.
 
@@ -92,7 +105,8 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
         'end': end_datetime.strftime('%Y-%m-%d'),
         'provider': provider,
         'quotes': (True if quotes else False),
-        'plot': (True if plot else False)
+        'plot': (True if plot else False),
+        'plot_vs':plot_vs
     }
     logger.info("{function}: {start} to {end} with lookack {lookback}".format(**fun_kwargs))
 

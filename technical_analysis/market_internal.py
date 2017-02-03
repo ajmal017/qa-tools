@@ -45,7 +45,7 @@ class MarketInternals:
         start = datetime.strptime(from_date, "%Y-%m-%d")
         end = datetime.strptime(to_date, "%Y-%m-%d")
 
-        index = pd.date_range(start, end)
+        index = pd.date_range(start, end) #TODO: make series from actual trading days?
         columns = [day_high_name(lookback), day_high_pct_name(lookback), day_low_name(lookback), day_low_pct_name(lookback)]
 
         sum = pd.DataFrame(index=index, columns=columns)
@@ -66,7 +66,6 @@ class MarketInternals:
                 sum.set_value(low_date, day_low_pct_name(lookback), perc * 100.0)
 
         return sum
-
 
 
     def __breadth_inner(self, df, res, lookback):

@@ -37,11 +37,12 @@ def hilo(kwargs):
     logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
 
     df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
+    #TODO: cache breadth_daily call in pickle file etc?
     res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
     if kwargs['plot']:
-        #TODO: add SPY to plot?
+        #TODO: add SPY to plot, left axis?
 
-        plot_data = res[[day_low_perc_name(kwargs['lookback']),day_high_perc_name(kwargs['lookback'])]]
+        plot_data = res[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]]
         matplotlib.style.use('ggplot')
 
         plot_data.plot()

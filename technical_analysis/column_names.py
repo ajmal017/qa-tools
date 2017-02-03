@@ -10,11 +10,11 @@ def day_high_name(lookback):
 def day_low_name(lookback):
     return "DAY_LOW_{n}".format(n=lookback)
 
-def day_high_perc_name(lookback):
-    return "DAY_HIGH_PERC_{n}".format(n=lookback)
+def day_high_pct_name(lookback):
+    return "DAY_HIGH_PCT_{n}".format(n=lookback)
 
-def day_low_perc_name(lookback):
-    return "DAY_LOW_PERC_{n}".format(n=lookback)
+def day_low_pct_name(lookback):
+    return "DAY_LOW_PCT_{n}".format(n=lookback)
 
 def above_dma_name(lookback):
     return "ABOVE_{n}DMA".format(n=lookback)

@@ -27,19 +27,88 @@ def breadth(kwargs):
     internals = MarketInternals()
     provider = CachedDataProvider(cache_name='breadth', expire_days=0)
 
-    logger.info("breadth for {0} tickers".format(len(kwargs['tickers'])))
+    click.echo("breadth for {0} tickers".format(len(kwargs['tickers'])))
 
+
+def do_plot(df, ticker, lower_column, higher_column, threshold):
+    """
+    ticker: plot with regular line style.
+    lower_column: mark in plot where data point is > threshold
+    higher_column: mark in plot were data point is > threshold
+    """
+    #TODO: assert threshold is minimum 20
+
+    percentages = [20, 30, 40, 50]
+    lows = []
+    highs = []
+    for l in percentages:
+        tmp = df[[lower_column]]
+        tmp = tmp[(tmp > l)].dropna()
+        tmp = pd.concat([tmp, df[[ticker]]], axis=1, join='inner')
+        lows.append(tmp)
+
+    for l in percentages:
+        tmp = df[[higher_column]]
+        tmp = tmp[(tmp > l)].dropna()
+        tmp = pd.concat([tmp, df[[ticker]]], axis=1, join='inner')
+        highs.append(tmp)
+
+    # lows_20 = df[[lower_column]]
+    # lows_20 = lows_20[(lows_20 > 20)].dropna()
+    # lows_20 = pd.concat([lows_20,df[[ticker]]],axis=1, join='inner')
+    #
+    # lows_30 = df[[lower_column]]
+    # lows_30 = lows_30[(lows_30 > 30)].dropna()
+    # lows_30 = pd.concat([lows_30, df[[ticker]]], axis=1, join='inner')
+    #
+    # lows_40 = df[[lower_column]]
+    # lows_40 = lows_40[(lows_40 > 40)].dropna()
+    # lows_40 = pd.concat([lows_40, df[[ticker]]], axis=1, join='inner')
+    #
+    # lows_50 = df[[lower_column]]
+    # lows_50 = lows_50[(lows_50 > 50)].dropna()
+    # lows_50 = pd.concat([lows_50, df[[ticker]]], axis=1, join='inner')
+
+    #highs = df[[higher_column]]
+    #highs = highs[(highs > threshold)].dropna()
+    #highs = pd.concat([highs,df[[ticker]]],axis=1, join='inner')
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(df[[ticker]].index, df[[ticker]], 'b-', label=ticker)
+
+    for i, item in enumerate(lows):
+        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% new {1} Day low".format(percentages[i], threshold), markersize=(4+(i*2)))
+    #ax1.plot(lows_20.index, lows_20[[ticker]], 'r.', label="20% {0} Day low".format(threshold), markersize=4)
+    #ax1.plot(lows_30.index, lows_30[[ticker]], 'r.', label="30% {0} Day low".format(threshold), markersize=8)
+    #ax1.plot(lows_40.index, lows_40[[ticker]], 'r.', label="40% {0} Day low".format(threshold), markersize=12)
+    #ax1.plot(lows_50.index, lows_50[[ticker]], 'r.', label="50% {0} Day low".format(threshold), markersize=16)
+
+    for i, item in enumerate(highs):
+        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% new {1} day high".format(percentages[i], threshold), markersize=(4+(i*2)))
+
+    #ax1.plot(highs.index, highs[[ticker]], 'g.', label=higher_column)
+    #matplotlib.style.use('ggplot')
+
+    legend = ax1.legend(loc='upper left', shadow=False, fontsize=8)
+    #legend.get_frame().set_facecolor('#00FFCC')
+    plt.title("Percentage making new {0} day low/high".format(threshold))
+    plt.show()
 
 def hilo(kwargs):
     internals = MarketInternals()
     provider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=kwargs['quotes'])
 
-    logger.info("hilo for {0} tickers".format(len(kwargs['tickers'])))
+    click.echo("hilo for {0} tickers".format(len(kwargs['tickers'])))
 
     df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
 
     #TODO: cache breadth_daily call in pickle file etc?
+    t0 = datetime.datetime.now()
     res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
+
+    if kwargs['verbose']:
+        click.echo("hilo calculations complete in {0}".format(datetime.datetime.now()-t0))
+
     if kwargs['plot']:
         if kwargs['plot_vs']:
             plot_vs = provider.get_data(kwargs['plot_vs'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
@@ -48,18 +117,21 @@ def hilo(kwargs):
         plot_data = res[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]]
         plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
         df = pd.concat([plot_vs,plot_data],axis=1, join='inner')
-        matplotlib.style.use('ggplot')
+
+        do_plot(df, kwargs['plot_vs'], day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback']), 20)
+
 
         # Plot_vs as line and breadth as bar?
-        fig, ax = plt.subplots(2, 1)  # you can pass sharex=True, sharey=True if you want to share axes.
-        df[['SPY']].plot(kind='line', ax=ax[0])
-        df[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]].plot(ax=ax[1],style=['.',','],linestyle='None')
+        #matplotlib.style.use('ggplot')
+        #fig, ax = plt.subplots(2, 1)  # you can pass sharex=True, sharey=True if you want to share axes.
+        #df[['SPY']].plot(kind='line', ax=ax[0])
+        #df[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]].plot(ax=ax[1],style=['.',','],linestyle='None')
+        #plt.show()
 
         #TODO: Try Seaborn
-        #TODO: add markers on plot_vs (SPY) whene breadh above 10, 20, 30 etc
 
-        plt.show()
     else:
+        #TODO: how to visualize todays breadth quickly?
         print(res[-3:])
 
 
@@ -74,7 +146,8 @@ def hilo(kwargs):
 @click.option('--quotes', is_flag=True, help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours.')
 @click.option('--plot', is_flag=True, help='Plot analyzed data')
 @click.option('--plot-vs', type=click.STRING, help='Plot analysis vs. stock/etf, e.g. SPY')
-def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot,plot_vs):
+@click.option('-v', '--verbose', is_flag=True, help='Enables verbose mode')
+def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot, plot_vs, verbose):
     """
     Calculate market internals such as market breadth etc.
 
@@ -106,9 +179,11 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
         'provider': provider,
         'quotes': (True if quotes else False),
         'plot': (True if plot else False),
-        'plot_vs':plot_vs
+        'plot_vs':plot_vs,
+        'verbose':verbose
     }
-    logger.info("{function}: {start} to {end} with lookack {lookback}".format(**fun_kwargs))
+    #TODO: click.echo for verbose output, logger for debugging only?
+    click.echo("{function}: {start} to {end} with lookack {lookback}".format(**fun_kwargs))
 
     if file:
         fun_kwargs['tickers'] = get_tickers(file)

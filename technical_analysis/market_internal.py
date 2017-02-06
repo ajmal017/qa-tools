@@ -12,14 +12,15 @@ def breadth_inner_parallel(df, results, lookback):
     lows = []
     results[df['Ticker'][0]] = {'highs': highs, 'lows': lows}
 
+    t0 = datetime.now()
     for index, row in df.iterrows():
         if ta.highest(df[:index]['Close']) >= lookback:
             highs.append(row.name)
         if ta.lowest(df[:index]['Close']) >= lookback:
             lows.append(row.name)
 
-
-    print(df['Ticker'][0],"done")
+    #TODO: some progress bar/verbose switch output
+    print("{0} done in {1}".format(df['Ticker'][0], (datetime.now()-t0)))
 
 
 
@@ -69,6 +70,7 @@ class MarketInternals:
 
 
     def __breadth_inner(self, df, res, lookback):
+        #TODO: try ta_lib if faster for highest/lowest??
         t0 = datetime.now()
         for index, row in df.iterrows():
             if index not in res.index:
@@ -89,7 +91,7 @@ class MarketInternals:
         """ Calculate the market breadth for all tickers in provider list of dataframes"""
 
         results = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             tmp = {executor.submit(breadth_inner_parallel, df, results, lookback): df for df in tickers}
 
         res = self.__process_results(results, lookback, from_date, to_date)

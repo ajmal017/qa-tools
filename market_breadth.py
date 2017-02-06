@@ -77,21 +77,21 @@ def do_plot(df, ticker, lower_column, higher_column, threshold):
     ax1.plot(df[[ticker]].index, df[[ticker]], 'b-', label=ticker)
 
     for i, item in enumerate(lows):
-        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% new {1} Day low".format(percentages[i], threshold), markersize=(4+(i*2)))
+        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% Making New {1} Day Low".format(percentages[i], threshold), markersize=(4+(i*2)))
     #ax1.plot(lows_20.index, lows_20[[ticker]], 'r.', label="20% {0} Day low".format(threshold), markersize=4)
     #ax1.plot(lows_30.index, lows_30[[ticker]], 'r.', label="30% {0} Day low".format(threshold), markersize=8)
     #ax1.plot(lows_40.index, lows_40[[ticker]], 'r.', label="40% {0} Day low".format(threshold), markersize=12)
     #ax1.plot(lows_50.index, lows_50[[ticker]], 'r.', label="50% {0} Day low".format(threshold), markersize=16)
 
     for i, item in enumerate(highs):
-        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% new {1} day high".format(percentages[i], threshold), markersize=(4+(i*2)))
+        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% Making New {1} Day High".format(percentages[i], threshold), markersize=(4+(i*2)))
 
     #ax1.plot(highs.index, highs[[ticker]], 'g.', label=higher_column)
     #matplotlib.style.use('ggplot')
 
     legend = ax1.legend(loc='upper left', shadow=False, fontsize=8)
     #legend.get_frame().set_facecolor('#00FFCC')
-    plt.title("Percentage making new {0} day low/high".format(threshold))
+    plt.title("% of Stocks Making New {0} Day High/Low".format(threshold))
     plt.show()
 
 def hilo(kwargs):
@@ -102,7 +102,7 @@ def hilo(kwargs):
 
     df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
 
-    #TODO: cache breadth_daily call in pickle file etc?
+
     t0 = datetime.datetime.now()
     res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
 
@@ -129,6 +129,7 @@ def hilo(kwargs):
         #plt.show()
 
         #TODO: Try Seaborn
+        #TODO: XLP,XLE,XLF etf vs. constitunts
 
     else:
         #TODO: how to visualize todays breadth quickly?
@@ -197,6 +198,7 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
         hilo(fun_kwargs)
 
     if function == 'breadth':
+        # AKA SPXA50R http://stockcharts.com/h-sc/ui?s=$SPXA50R
         breadth()
 
 

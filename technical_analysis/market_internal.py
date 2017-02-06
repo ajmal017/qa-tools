@@ -85,19 +85,21 @@ class MarketInternals:
         diff = datetime.now() - t0
         #print("Done in: {0} secs".format(diff))
 
-
-
+    #TODO: cache call in pickle file? then use in backtests:
+    # if (res['2016-02-20'][day_low_pct_name(lookback)] > 20) and longCondition:
+    #   go_long()
     def breadth_daily(self, tickers, lookback, from_date, to_date):
         """ Calculate the market breadth for all tickers in provider list of dataframes"""
 
         results = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
             tmp = {executor.submit(breadth_inner_parallel, df, results, lookback): df for df in tickers}
 
         res = self.__process_results(results, lookback, from_date, to_date)
 
         return res
 
+    #TODO: cache call in pickle file?
     def breadth_dma(self, tickers, lookback):
         """ Calculate the number of tickers below and above X lookback MA"""
         res = pd.DataFrame()

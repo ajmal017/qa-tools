@@ -8,7 +8,7 @@ from technical_analysis import ta
 import pandas as pd
 
 
-from dataprovider.web_dataprovider import WebDataprovider
+from dataprovider.dataprovider import CachedDataProvider
 
 
 BUCKET_SIZE = 0.5
@@ -48,21 +48,44 @@ def calculate(diff):
     return s
 
 def get_stats(data):
-    neg = pos = avg = avg_ceiling = 0
+    neg = pos = avg = avg_ceiling = 0.0
+    high_open_avg_bull = 0.0
+    high_open_avg_bear = 0.0
     close_list = []
     stats = {}
+
+    bull = []
+    bear = []
 
     for index, row in data.iterrows():
         close_list.append(row['Close'])
         diff = float(row["Close"]) - float(row["Open"])
+        ho_diff = float(row["High"]) - float(row["Open"])
         if diff <= 0.0:
+            # Bear bar
             neg += 1
+            high_open_avg_bear += ho_diff
+            bear.append(ho_diff)
         else:
+            # Bull bar
             avg += diff
             avg_ceiling += min(diff,1)
             pos += 1
+            high_open_avg_bull += ho_diff
+            bull.append(ho_diff)
 
-    stats['o2c'] = {"neg": neg, "pos":pos, "avg":avg/float(len(data)), "avg_ceil": avg_ceiling/float(len(data))}
+    #tmp = pd.concat([pd.DataFrame(bull), pd.DataFrame(bear)], ignore_index=True, axis=1)
+
+    tmp1 = pd.DataFrame({'bear':bear})
+    print(tmp1.describe())
+
+    stats['o2c'] = {
+        "neg": neg, "pos":pos,
+        "avg":avg/float(len(data)),
+        "avg_ceil": avg_ceiling/float(len(data)),
+        "ho_avg_bull": high_open_avg_bull/pos,
+        "ho_avg_bear": high_open_avg_bear/neg
+    }
 
     pos2 = 0
     neg2 = 0
@@ -162,7 +185,7 @@ df.C.plot(ax=plt.gca())
 
     for i, data in enumerate(datas):
         plt.subplot(len(datas), 1, i+1)
-        print(i)
+        #print(i)
         data.plot()
 
     plt.show()
@@ -225,6 +248,9 @@ if __name__ == '__main__':
         3. It seems like edge is far less for selling nearest ITM.
            The mean of all ITM strikes is 0,26 vs -0.27 for nearest OTM, i.e. nearest ITM option is more likely to close ITM than OTM!
         4. Using trendfiler, e.g. 50DMA slope, 200DMA, etc. increases edge slightly
+        5. The average "tail" i.e. high-open is:
+            - bull bars: avg=?, median=?
+            - bear bars: avg=?, median=?
 
     """
 
@@ -235,7 +261,7 @@ if __name__ == '__main__':
     #buckets = calculate_bucket([{"open":21.6,"close":21.5},{"open":22.1, "close":21.8}, {"open":25, "close":24.8}, {"open":25, "close":27.5}]
     #data = get_data("/Users/fbjarkes/Dropbox/tickdata_weekly/NYSF_VXX.txt")
 
-    provider = WebDataprovider()
+    provider = CachedDataProvider()
     data = provider.get_data("VXX","2010-01-01","2016-12-31",timeframe="week", provider='yahoo')
     spy_daily = provider.get_data("SPY", "2010-01-01", "2016-12-31", provider='yahoo')
     spy_daily = ta.add_ma(spy_daily, 200)
@@ -250,8 +276,9 @@ if __name__ == '__main__':
     for index, row in data.iterrows():
         #print(index," Open=",row['Open'], " Close=",row["Close"])
         #print("index=",index.isoformat())
-        if spy_daily.loc[index][ta.ma_slope_column_name(200)] <= 0:
-            print(row.name.date().__str__())
+        if spy_daily.loc[index][ta.ma_slope_name(200)] <= 0:
+            #print(row.name.date().__str__())
+            pass
         else:
             converted.append({"Open":float(row["Open"]), "Close": float(row["Close"])})
             filtered = filtered.append(row)
@@ -264,7 +291,9 @@ if __name__ == '__main__':
     print("Neg: %d/%d = %f" % (stats['o2c']['neg'], len(data), stats['o2c']['neg']/float(len(data))))
     print("Pos: %d/%d = %f" % (stats['o2c']['pos'], len(data), stats['o2c']['pos']/float(len(data))))
     print("Avg: %f" % (stats['o2c']['avg']))
-    print("Avg (max 1): %f" % (stats['o2c']['avg_ceil'])) # This assumes an OTM strike is sold from official VXX opening price
+    print("Avg positive (max $1): %f" % (stats['o2c']['avg_ceil'])) # This assumes an OTM strike is sold from official VXX opening price
+    print("High-Open bull avg: %f" % (stats['o2c']['ho_avg_bull']))
+    print("High-Open bear avg: %f" % (stats['o2c']['ho_avg_bear']))
     print("")
     print("Weekly C2C:")
     print("Neg: %d/%d = %f" % (stats['c2c']['neg'], len(data)-1, stats['c2c']['neg'] / float(len(data)-1)))
@@ -277,7 +306,7 @@ if __name__ == '__main__':
     print("Neg: %d/%d = %f" % (stats['o2c']['neg'], len(converted), stats['o2c']['neg'] / float(len(converted))))
     print("Pos: %d/%d = %f" % (stats['o2c']['pos'], len(converted), stats['o2c']['pos'] / float(len(converted))))
     print("Avg: %f" % (stats['o2c']['avg']))
-    print("Avg (max 1): %f" % (stats['o2c']['avg_ceil']))  # This assumes an OTM strike is sold from official VXX opening price
+    print("Avg positive (max $1): %f" % (stats['o2c']['avg_ceil']))  # This assumes an OTM strike is sold from official VXX opening price
     print("")
     print("Weekly C2C:")
     print("Neg: %d/%d = %f" % (stats['c2c']['neg'], len(converted) - 1, stats['c2c']['neg'] / float(len(converted) - 1)))

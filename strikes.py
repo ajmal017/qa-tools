@@ -17,17 +17,6 @@ def usage():
     print("./strikes.py --strike-size 0.5 --direction short --round up")
 
 
-def strikes():
-    # TODO:
-    # 1. Load weekly data, e.g. SVXY
-    # 2. For each week:
-    #   - how many strikes above or below does this week close from last week
-    #   - SVXY: should be like at most 1 strike below like 20-30% of weeks
-    # 3. plot number of strikes, X, below or above last weeks close.
-    pass
-
-
-
 def find_nearest_strike(number,strike_size):
     n = int(number)
     while (n < number):

@@ -21,3 +21,9 @@ def above_dma_name(lookback):
 
 def below_dma_name(lookback):
     return "BELOW_{n}DMA".format(n=lookback)
+
+def above_dma_pct_name(lookback):
+    return "ABOVE_{n}DMA_PCT".format(n=lookback)
+
+def below_dma_pct_name(lookback):
+    return "BELOW_{n}DMA_PCT".format(n=lookback)

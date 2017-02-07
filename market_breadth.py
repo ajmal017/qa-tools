@@ -9,8 +9,8 @@ import click
 import pandas as pd
 import talib
 
-from technical_analysis.column_names import *
-
+from technical_analysis import ta
+import technical_analysis.column_names as ta_columns
 from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis.market_internal import MarketInternals
 
@@ -22,13 +22,6 @@ def get_tickers(file):
         return [ticker.rstrip() for ticker in f.readlines()]
 
 
-def breadth(kwargs):
-    # TODO: test redis and other backend storages
-    internals = MarketInternals()
-    provider = CachedDataProvider(cache_name='breadth', expire_days=0)
-
-    click.echo("breadth for {0} tickers".format(len(kwargs['tickers'])))
-
 
 def do_plot(df, ticker, lower_column, higher_column, threshold):
     """
@@ -36,8 +29,7 @@ def do_plot(df, ticker, lower_column, higher_column, threshold):
     lower_column: mark in plot where data point is > threshold
     higher_column: mark in plot were data point is > threshold
     """
-    #TODO: assert threshold is minimum 20
-
+    #TODO: titles text, labels
     percentages = [20, 30, 40, 50]
     lows = []
     highs = []
@@ -94,31 +86,76 @@ def do_plot(df, ticker, lower_column, higher_column, threshold):
     plt.title("% of Stocks Making New {0} Day High/Low".format(threshold))
     plt.show()
 
-def hilo(kwargs):
+def dma_analysis(kwargs):
     internals = MarketInternals()
+    lookback = kwargs['lookback']
     provider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=kwargs['quotes'])
 
-    click.echo("hilo for {0} tickers".format(len(kwargs['tickers'])))
+    if kwargs['verbose']:
+        click.echo("Fetching data for {0} tickers".format(len(kwargs['tickers'])))
 
+    columns = {
+        'high_or_above': ta_columns.above_dma_name(lookback),
+        'high_or_above_pct': ta_columns.above_dma_pct_name(lookback),
+        'low_or_below': ta_columns.below_dma_name(lookback),
+        'low_or_below_pct': ta_columns.below_dma_pct_name(lookback)
+    }
     df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
 
-
     t0 = datetime.datetime.now()
-    res = internals.breadth_daily(df_list, int(kwargs['lookback']), kwargs['start'], kwargs['end'])
+    df_with_ta = [ta.add_ma(df, lookback) for df in df_list]
+    logger.info("TA for dataframes done: {0}".format(datetime.datetime.now() - t0))
 
     if kwargs['verbose']:
-        click.echo("hilo calculations complete in {0}".format(datetime.datetime.now()-t0))
+        click.echo("Running market breadth function '{0}'".format(kwargs['function']))
+    t0 = datetime.datetime.now()
+    res = internals.breadth(df_with_ta, int(lookback), kwargs['start'], kwargs['end'], columns, MarketInternals.dma)
+    logger.info("Function '{0}' completed in {1}".format(kwargs['function'],datetime.datetime.now()-t0))
 
-    if kwargs['plot']:
-        if kwargs['plot_vs']:
-            plot_vs = provider.get_data(kwargs['plot_vs'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
-            plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close':kwargs['plot_vs']})
+    if kwargs['plot_vs']:
+        plot_vs = provider.get_data(kwargs['plot_vs'], from_date=kwargs['start'], to_date=kwargs['end'],
+                                    provider=kwargs['provider'])
+        plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close': kwargs['plot_vs']}) # Prepare compare dataframe
+        plot_data = res[[columns['low_or_below_pct'], columns['high_or_above_pct']]] # Select above/below percentage columns
+        plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
+        df = pd.concat([plot_vs, plot_data], axis=1, join='inner') # join percentage values on valid trading days for compare
 
-        plot_data = res[[day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback'])]]
+        do_plot(df, kwargs['plot_vs'], columns['low_or_below_pct'], columns['high_or_above_pct'], lookback)
+    else:
+        click.echo(res)
+
+
+def hilo_analysis(kwargs):
+    internals = MarketInternals()
+    lookback = kwargs['lookback']
+    provider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=kwargs['quotes'])
+
+    if kwargs['verbose']:
+        click.echo("Fetching data for {0} tickers".format(len(kwargs['tickers'])))
+    df_list = provider.get_data_parallel(kwargs['tickers'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
+
+    columns = {
+        'high_or_above':ta_columns.day_high_name(lookback),
+        'high_or_above_pct': ta_columns.day_high_pct_name(lookback),
+        'low_or_below': ta_columns.day_low_name(lookback),
+        'low_or_below_pct': ta_columns.day_low_pct_name(lookback)
+    }
+
+    if kwargs['verbose']:
+        click.echo("Running market breadth function '{0}'".format(kwargs['function']))
+    t0 = datetime.datetime.now()
+    res = internals.breadth(df_list, int(lookback), kwargs['start'], kwargs['end'], columns, MarketInternals.hilo)
+    logger.info("Function '{0}' completed in {1}".format(kwargs['function'],datetime.datetime.now()-t0))
+
+    if kwargs['plot_vs']:
+        plot_vs = provider.get_data(kwargs['plot_vs'], from_date=kwargs['start'], to_date=kwargs['end'], provider=kwargs['provider'])
+        plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close':kwargs['plot_vs']})
+
+        plot_data = res[[columns['low_or_below_pct'], columns['high_or_above_pct']]]
         plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
         df = pd.concat([plot_vs,plot_data],axis=1, join='inner')
 
-        do_plot(df, kwargs['plot_vs'], day_low_pct_name(kwargs['lookback']), day_high_pct_name(kwargs['lookback']), 20)
+        do_plot(df, kwargs['plot_vs'], columns['low_or_below_pct'], columns['high_or_above_pct'], lookback)
 
 
         # Plot_vs as line and breadth as bar?
@@ -129,7 +166,7 @@ def hilo(kwargs):
         #plt.show()
 
         #TODO: Try Seaborn
-        #TODO: XLP,XLE,XLF etf vs. constitunts
+            #TODO: XLP,XLE,XLF etf vs. constitunts
 
     else:
         #TODO: how to visualize todays breadth quickly?
@@ -145,10 +182,9 @@ def hilo(kwargs):
 @click.option('--file',type=click.Path(exists=True), help="Read tickers from file")
 @click.option('--provider',type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--quotes', is_flag=True, help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours.')
-@click.option('--plot', is_flag=True, help='Plot analyzed data')
 @click.option('--plot-vs', type=click.STRING, help='Plot analysis vs. stock/etf, e.g. SPY')
 @click.option('-v', '--verbose', is_flag=True, help='Enables verbose mode')
-def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot, plot_vs, verbose):
+def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot_vs, verbose):
     """
     Calculate market internals such as market breadth etc.
 
@@ -157,12 +193,13 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
     function:
 
     'hilo': to calculate all stocks making new <lookback> highs/lows
-    'breadth': calculate all stocks below/above <lookback> MA
+    'dma': calculate all stocks below/above <lookback> MA
 
     lookback:
     Integer to specify lookback period
 
     """
+    # TODO: test redis and other backend storages?
     if end is 'today':
         end_datetime = datetime.datetime.now()
     else:
@@ -179,7 +216,6 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
         'end': end_datetime.strftime('%Y-%m-%d'),
         'provider': provider,
         'quotes': (True if quotes else False),
-        'plot': (True if plot else False),
         'plot_vs':plot_vs,
         'verbose':verbose
     }
@@ -195,11 +231,11 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
             fun_kwargs['tickers'] = tickers.split(",")
 
     if function == 'hilo':
-        hilo(fun_kwargs)
+        hilo_analysis(fun_kwargs)
 
-    if function == 'breadth':
+    if function == 'dma':
         # AKA SPXA50R http://stockcharts.com/h-sc/ui?s=$SPXA50R
-        breadth()
+        dma_analysis(fun_kwargs)
 
 
 if __name__ == '__main__':

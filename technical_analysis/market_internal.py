@@ -1,109 +1,16 @@
 import concurrent.futures
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging as logger
 import pandas as pd
 
 from technical_analysis import ta
 import technical_analysis.column_names as ta_names
 
+#TODO: set logger level using parameter
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
-
-#Deprecated?
-# def breadth_dma_inner_parallel(df, results, lookback):
-#     ticker = df['Ticker'][0]
-#     above = []
-#     below = []
-#     results[ticker] = {'above': above, 'below': below}
-#
-#     if not ta_names.ma_name(lookback) in df.columns:
-#         raise Exception("Missing {0}DMA calculations for {1}".format(lookback,ticker))
-#
-#     for index, row in df.iterrows():
-#         if row['Close'] < row[ta_names.ma_name(lookback)]:
-#             below.append(row.name)
-#         else:
-#             above.append(row.name)
 
 
 class MarketInternals:
-
-    # #Deprecated
-    # @staticmethod
-    # def breadth_inner_parallel(df, results, lookback):
-    #     ticker = df['Ticker'][0]
-    #     highs = []
-    #     lows = []
-    #     results[ticker] = {'highs': highs, 'lows': lows}
-    #
-    #     t0 = datetime.now()
-    #     for index, row in df.iterrows():
-    #         if ta.highest(df[:index]['Close']) >= lookback:
-    #             highs.append(row.name)
-    #         if ta.lowest(df[:index]['Close']) >= lookback:
-    #             lows.append(row.name)
-    #         print(ticker, "C")
-    #     # TODO: some progress bar/verbose switch output
-    #
-    #     print("{0} done in {1}".format(ticker, (datetime.now() - t0)))
-    #
-    #
-    #
-    #
-    #
-    # def __breadth_inner(self, df, res, lookback):
-    #     t0 = datetime.now()
-    #     for index, row in df.iterrows():
-    #         if index not in res.index:
-    #             res.set_value(index, ta_names.day_high_name(lookback), 0)
-    #             res.set_value(index, ta_names.day_low_name(lookback), 0)
-    #
-    #         if ta.highest(df[:index]['Close']) >= lookback:
-    #             res.set_value(index, ta_names.day_high_name(lookback), res.get_value(index, ta_names.day_high_name(lookback)) + 1)
-    #         if ta.lowest(df[:index]['Close']) >= lookback:
-    #             res.set_value(index, ta_names.day_low_name(lookback), res.get_value(index, ta_names.day_low_name(lookback)) + 1)
-    #
-    #     diff = datetime.now() - t0
-    #     #print("Done in: {0} secs".format(diff))
-    #
-    # #TODO: cache call in pickle file? then use in backtests:
-    # # if (res['2016-02-20'][day_low_pct_name(lookback)] > 20) and longCondition:
-    # #   go_long()
-    # def breadth_daily(self, tickers, lookback, from_date, to_date):
-    #     """ Calculate the market breadth for all tickers in provider list of dataframes"""
-    #
-    #     results = {}
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-    #         tmp = {executor.submit(MarketInternals.breadth_inner_parallel, df, results, lookback): df for df in tickers}
-    #
-    #     res = self.__process_results(results, lookback, from_date, to_date)
-    #
-    #     return res
-    #
-    #
-    #
-    # #TODO: cache call in pickle file?
-    # def breadth_dma(self, tickers, lookback, from_date, to_date):
-    #     """ Calculate the number of tickers below and above X lookback MA"""
-    #     res = pd.DataFrame()
-    #
-    #     for df in tickers:
-    #         if not ta_names.ma_name(lookback) in df.columns:
-    #             raise Exception("Missing {n}DMA calculations".format(n=lookback))
-    #
-    #         for index, row in df.iterrows():
-    #             if index not in res.index:
-    #                 res.set_value(index, ta_names.above_dma_name(lookback), 0)
-    #                 res.set_value(index, ta_names.below_dma_name(lookback), 0)
-    #
-    #             if row['Close'] < row[ta_names.ma_name(lookback)]:
-    #                 res.set_value(index, ta_names.below_dma_name(lookback), res.get_value(index, ta_names.below_dma_name(lookback)) + 1)
-    #             else:
-    #                 res.set_value(index, ta_names.above_dma_name(lookback), res.get_value(index, ta_names.above_dma_name(lookback)) + 1)
-    #
-    #     return res
-
-    #### Deprecate above here ####
-
 
     def breadth(self, df_list, lookback, from_date, to_date, columns, fun):
         """ Calculate breadth using function for all tickers in df_list"""
@@ -118,16 +25,16 @@ class MarketInternals:
                     res = future.result()
                     results[ticker] = res
                 except Exception as exc:
-                    print("Error: {0}. Data: {1}".format(exc,futures[future]))
+                    print("Error: {0}".format(exc))
 
         logger.info("Processing results")
         t0 = datetime.now()
-        res = self.__process_results(results, lookback, from_date, to_date, columns)
+        res = MarketInternals.process_results(results, from_date, to_date, columns)
         logger.info("Done in {0}".format(datetime.now()-t0))
         return res
 
-
-    def __process_results(self, results, lookback, from_date, to_date, columns):
+    @staticmethod
+    def process_results(results, from_date, to_date, columns):
         """
             results example:
             {
@@ -147,10 +54,8 @@ class MarketInternals:
         end = datetime.strptime(to_date, "%Y-%m-%d")
 
         index = pd.date_range(start, end) # make series from actual trading days?
-        #columns = [day_high_name(lookback), day_high_pct_name(lookback), day_low_name(lookback), day_low_pct_name(lookback)]
         cols = [columns['high_or_above'],columns['high_or_above_pct'],columns['low_or_below'],columns['low_or_below_pct']]
-        sum = pd.DataFrame(index=index, columns=cols)
-        sum = sum.fillna(0.0)
+        sum = pd.DataFrame(index=index, columns=cols).fillna(0.0)
 
         for key, value in results.items():
             for high_date in value['high_or_above']:
@@ -180,14 +85,13 @@ class MarketInternals:
                 highs.append(row.name)
             if ta.lowest(df[:index]['Close']) >= lookback:
                 lows.append(row.name)
-        # TODO: some progress bar/verbose switch output
 
-        print("{0} done in {1}".format(ticker, (datetime.now() - t0)))
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
         return results
 
     @staticmethod
     def dma(df, lookback):
-        #ticker = df['Ticker'][0]
+        ticker = df['Ticker'][0]
 
         above = []
         below = []
@@ -199,6 +103,6 @@ class MarketInternals:
                 below.append(row.name)
             else:
                 above.append(row.name)
-        #print("{0} done in {1}".format(ticker, (datetime.now() - t0)))
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
         return results
 

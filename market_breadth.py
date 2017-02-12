@@ -45,10 +45,10 @@ def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, titl
     ax1.plot(df[[ticker]].index, df[[ticker]], 'b-', label=ticker)
 
     for i, item in enumerate(lows):
-        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% level".format(pct_levels[i], threshold), markersize=(4+(i*2)))
+        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% {1}".format(pct_levels[i], lower_column), markersize=(4+(i*2)))
 
     for i, item in enumerate(highs):
-        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% level".format(pct_levels[i], threshold), markersize=(4+(i*2)))
+        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% {1}".format(pct_levels[i], higher_column), markersize=(4+(i*2)))
 
     legend = ax1.legend(loc='upper left', shadow=False, fontsize=8)
     #legend.get_frame().set_facecolor('#00FFCC')

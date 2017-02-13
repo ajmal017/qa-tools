@@ -32,5 +32,3 @@ def lowest(df):
         if cmp < last:
             return i
     return len(df)-1
-
-

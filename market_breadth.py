@@ -70,7 +70,6 @@ def dma_analysis(kwargs, df_list, plot_vs):
     df_with_ta = [ta.add_ma(df, lookback) for df in df_list]
     logger.info("TA for dataframes done: {0}".format(datetime.datetime.now() - t0))
 
-
     click.echo("Running market breadth function '{0}'".format(kwargs['function']))
     t0 = datetime.datetime.now()
     res = internals.breadth(df_with_ta, int(lookback), kwargs['start'], kwargs['end'], columns, MarketInternals.dma)

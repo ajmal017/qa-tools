@@ -39,7 +39,7 @@ Options:
   --help                     Show this message and exit.
 ```
 
-#### Examples:
+##### Examples:
 
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
@@ -79,6 +79,13 @@ Options:
     2017-02-08          0.0         0.000000         0.0        0.000000
     
     ```
+    
+#### Sesonality
+```
+Usage
+```
+##### Examples
+
     
 #### TODO:
 * Additional breadth/internal indicators

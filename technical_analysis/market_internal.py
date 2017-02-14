@@ -72,6 +72,7 @@ class MarketInternals:
 
         return sum
 
+    #TODO: cache method?
     @staticmethod
     def hilo(df, lookback):
         ticker = df['Ticker'][0]
@@ -89,6 +90,7 @@ class MarketInternals:
         logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
         return results
 
+    # TODO: cache method?
     @staticmethod
     def dma(df, lookback):
         ticker = df['Ticker'][0]

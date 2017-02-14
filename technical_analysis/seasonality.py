@@ -19,6 +19,14 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 # example rule: only long if rating from todays close to 2w up to 2m is > 50
 
 
+def rebase(prices):
+    return prices/prices[0]*100
+
+def normalize(df):
+    return df.div(df.max())
+    # Min-Max normalization
+    #return (df-df.min()).div(df.max()-df.min())
+
 def normalized_per_year(df):
     slices = {}
     min_group = None
@@ -26,11 +34,11 @@ def normalized_per_year(df):
 
     groups = df.groupby(df.index.year)
     for group in groups:
-        if len(group[1]) < 240:
+        if len(group[1]) < 240: # will skip SPY 2001 with 225 etnries
             logger.warning("Skipping year {0} with only {1} entries".format(group[0], len(group[1])))
         else:
             closes = group[1]['Close']
-            slices[group[0]] = pd.DataFrame(closes.div(closes.max()), columns=['Close'])
+            slices[group[0]] = normalize(pd.DataFrame(closes))
 
             if len(closes) < min_days:
                 min_days = len(closes)
@@ -46,39 +54,20 @@ def normalized_per_year(df):
 
     return normalized.dropna().set_index(dates)
 
-def calculate_returns(df):
-    return df
-
-def average_per_year(df):
-    returns = pd.DataFrame()
-    return np.log(df).diff()
-    #for index, row in df.iterrows():
-    #    df.loc[index]
-
-    #return returns
-
-def seasonality_returns(df):
+def seasonality_returns(df, market_regime):
+    #TODO: market regime
+    ticker=df['Ticker'][0]
     start_year = df.index[0]
     end_year = df.index[-1]
-    logger.info("Using data for {0} years".format(relativedelta(end_year,start_year).years))
+    logger.info("{0}: using data for {1} years".format(ticker,relativedelta(end_year,start_year).years))
 
     #returns = pd.DataFrame(np.log(df['Close']).diff(), columns=['Close'])
     normalized = normalized_per_year(df)
 
-    average = pd.DataFrame(columns=['Close'])
+    average = pd.DataFrame(columns=[ticker])
     for index, row in normalized.iterrows():
-        average.set_value(index,'Close', row.values.mean())
-    # normalized_per_year = pd.DataFrame()
-    # for k in slices:
-    #     normalized_per_year[k] = pd.Series(slices[k]['Close'].values)
-    #
-    # avg_per_year = average_per_year(add_date_index(normalized_per_year, slices))
-
-
+        average.set_value(index,ticker, row.values.mean())
     return average
-
-    # avg_per_year = average_per_year(normalized_per_year)
-    # return avg_per_year
 
 
 def average_return(df, today, forward):

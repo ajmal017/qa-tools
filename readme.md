@@ -44,9 +44,11 @@ Options:
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
     ```
-    $ python3 market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=20,30,40,50,60
+    $ python3 market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=40,50,60
     ```
-    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_hilo20.png)
+    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_2.png)
+    
+    Extreme strength is usually a bullish signal.
     
     Note: this function takes approx. 20min to run on a MacBook Pro, 2.2Ghz, Mid-2014
 

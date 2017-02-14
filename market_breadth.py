@@ -171,7 +171,7 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
     click.echo("Fetching data for {0} tickers".format(len(fun_kwargs['tickers'])))
     provider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=fun_kwargs['quotes'])
     df_list = provider.get_data_parallel(fun_kwargs['tickers'], from_date=fun_kwargs['start'], to_date=fun_kwargs['end'],
-                                         provider=fun_kwargs['provider'],max_workers=10)
+                                         provider=fun_kwargs['provider'], max_workers=10)
 
     if fun_kwargs['plot_vs']:
         plot_vs = provider.get_data(fun_kwargs['plot_vs'], from_date=fun_kwargs['start'], to_date=fun_kwargs['end'],

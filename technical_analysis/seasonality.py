@@ -22,6 +22,9 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 def rebase(prices):
     return prices/prices[0]*100
 
+def rebase_days(prices):
+    return prices/prices[1]*100
+
 def normalize(df):
     return df.div(df.max())
     # Min-Max normalization
@@ -54,8 +57,8 @@ def normalized_per_year(df):
 
     return normalized.dropna().set_index(dates)
 
-def seasonality_returns(df, market_regime):
-    #TODO: market regime
+def seasonality_returns(df):
+    #TODO: skip market regime?
     ticker=df['Ticker'][0]
     start_year = df.index[0]
     end_year = df.index[-1]

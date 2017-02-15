@@ -26,7 +26,6 @@ class TestSeasonality(unittest.TestCase):
     def test_win_rate(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2016-01-01')
         df = seasonality.seasonality(spy_daily)
-        #TODO: should df contain precalculated winrate columns?, or just skip winrate??
 
 if __name__ == '__main__':
     unittest.main()

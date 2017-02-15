@@ -84,10 +84,38 @@ Options:
     
 #### Sesonality
 ```
-Usage
+Usage: seasonality.py <options>
+
+Options:
+  --start TEXT                    Starting year, e.g. '2005-01-01'
+  --end TEXT                      Ending year, e.g. '2015-12-31'
+  --ticker TEXT                   Ticker to analyze, e.g. 'SPY'
+  --provider [yahoo|google]
+  --plot-vs TEXT                  Which Stock/ETF to visualize in same plot,
+                                  e.g. 'SPY'
+  --plot-label [day|month]        Label for x-axis. Use 'Day' for trading day
+                                  of year
+  --market-regime [bull|bear|both]
+                                  Filter seasonality based on market regime,
+                                  i.e. 200DMA bull/bear filter.
+  --help                          Show this message and exit.
 ```
 ##### Examples
-
+1. Plot SPY vs. the seasonlity using trading days as labels: 
+    ```
+    $ python3 seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
+    ```
+    ![% SPY vs. Seasonality](images/spy_seasonality.png)
+    
+    Currently a bit streched on the upside?
+    
+2. Plot USO vs the seasonality using calendar labels:
+    ```
+    $ python3 seasonality.py --provider=yahoo --start 2005-01-01 --end 2016-12-31 --ticker USO --plot-vs USO --plot-label month
+    ```
+    ![% USO vs. Seasonality](images/uso_seasonality.png)
+    
+    Perhaps selling some USO during late summer is a good idea...
     
 #### TODO:
 * Additional breadth/internal indicators

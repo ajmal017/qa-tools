@@ -7,7 +7,7 @@ from technical_analysis.column_names import *
 
 class TestTechnicalAnalysis(unittest.TestCase):
 
-    local_provider = CachedDataProvider(cache_name='test_data', expire_days=0)
+    local_provider = CachedDataProvider(cache_name='test_ta', expire_days=0)
 
     def test_ma_slope(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')
@@ -32,6 +32,19 @@ class TestTechnicalAnalysis(unittest.TestCase):
 
         #for index, row in spy_daily.iterrows():
         #    print(index,":", row['Close'], " ", ta.lowest(spy_daily.loc[:index]['Close']))
+
+    def test_seasonality(self):
+        spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2016-01-01')
+        seasonality = ta.seasonality([spy_daily])
+
+        #SPY: Nov to May
+        assert seasonality.average_return('spy','2015-11-05','1M') > 0.0 # Avg. return to beginning of Dec.
+        assert seasonality.average_return('spy', '2015-11-05', '2M') > 0.0 # Avg return to beginning of Jan.
+        assert seasonality.average_return('spy', '2015-11-05', '3M') > 0.0  # Avg return to beginning of Feb.
+        assert seasonality.average_return('spy', '2015-11-05', '4M') > 0.0  # Avg return to beginning of Mar.
+        assert seasonality.average_return('spy', '2015-11-05', '5M') > 0.0  # Avg return to beginning of May
+
+        #assert seasonality.py.average_return('spy', '2016-11-05', '5M') > 0.0  # Throw error, lookahead bias?
 
 
 if __name__ == '__main__':

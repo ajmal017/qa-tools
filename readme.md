@@ -87,18 +87,16 @@ Options:
 Usage: seasonality.py <options>
 
 Options:
-  --start TEXT                    Starting year, e.g. '2005-01-01'
-  --end TEXT                      Ending year, e.g. '2015-12-31'
-  --ticker TEXT                   Ticker to analyze, e.g. 'SPY'
+  --start TEXT               Starting year, e.g. '2005-01-01'
+  --end TEXT                 Ending year, e.g. '2015-12-31'
+  --ticker TEXT              Ticker to analyze, e.g. 'SPY'
   --provider [yahoo|google]
-  --plot-vs TEXT                  Which Stock/ETF to visualize in same plot,
-                                  e.g. 'SPY'
-  --plot-label [day|month]        Label for x-axis. Use 'Day' for trading day
-                                  of year
-  --market-regime [bull|bear|both]
-                                  Filter seasonality based on market regime,
-                                  i.e. 200DMA bull/bear filter.
-  --help                          Show this message and exit.
+  --plot-vs TEXT             Which Stock/ETF to visualize in same plot, e.g.
+                             'SPY'
+  --plot-facets BOOLEAN      Plot monthly facets
+  --plot-label [day|month]   Label for x-axis. Use 'Day' for trading day of
+                             year
+  --help                     Show this message and exit.
 ```
 ##### Examples
 1. Plot SPY vs. the seasonlity using trading days as labels: 
@@ -119,7 +117,6 @@ Options:
     
 #### TODO:
 * Additional breadth/internal indicators
-* Seasonality
 * Detailed analysis/plot of Bollinger breakout strategies 
 * Support for OMXS30 (Swedish) stocks
 * Fixes/Optimizations

@@ -56,11 +56,11 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, plot
             if plot_vs:
                 plot_vs_start = "{0}-01-01".format(datetime.datetime.now().year)
                 plot_vs_end = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
-                plot_vs_df = data_provider.get_data(ticker, plot_vs_start, plot_vs_end, provider=provider)['Close']
+                plot_vs_df = data_provider.get_data(plot_vs, plot_vs_start, plot_vs_end, provider=provider)['Close']
 
                 # Reindex the the plot_vs data to seasonality_data datetimes
                 new_index = seasonlity_data.index[0:len(plot_vs_df)]
-                col = "{0} until {1}".format(ticker, plot_vs_end)
+                col = "{0} until {1}".format(plot_vs, plot_vs_end)
                 df = pd.DataFrame(plot_vs_df.values, index=new_index, columns=[col])
                 df = seasonality.normalize(df).apply(seasonality.rebase)
 
@@ -86,11 +86,11 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, plot
             if plot_vs:
                 plot_vs_start = "{0}-01-01".format(datetime.datetime.now().year)
                 plot_vs_end = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
-                plot_vs_df = data_provider.get_data(ticker, plot_vs_start, plot_vs_end, provider=provider)
+                plot_vs_df = data_provider.get_data(plot_vs, plot_vs_start, plot_vs_end, provider=provider)
 
                 df = seasonality.trading_day_reindex(plot_vs_df, ticker, 'Close')
                 df = seasonality.normalize(df).apply(seasonality.rebase_days)
-                col = "{0} until {1}".format(ticker, plot_vs_end)
+                col = "{0} until {1}".format(plot_vs, plot_vs_end)
                 ax.plot(df, label=col)
                 title = "{0} Seasonality vs {0}".format(ticker)
 

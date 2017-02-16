@@ -113,7 +113,7 @@ Options:
     ```
     ![% USO vs. Seasonality](images/uso_seasonality.png)
     
-    Perhaps selling some USO during late summer is a good idea...
+    Perhaps selling some USO during late summer is a good idea. As least as while the crude oil futures market is contango. 
     
 #### TODO:
 * Additional breadth/internal indicators

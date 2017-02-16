@@ -13,9 +13,7 @@ class TestSeasonality(unittest.TestCase):
 
         df = seasonality.trading_day_reindex(seasonality.seasonality_returns(spy_daily),"SPY","SPY")
 
-        #tmp = seasonality.trading_day_reindex(spy_daily, 'SPY', 'Close')
-        #df_days = seasonality.trading_day_reindex(df, 'SPY', 'SPY')
-        #TODO: df should contain columns ["day as time obj", "avg return between 0 and 1"]
+
         #Test SPY: Nov to May
         assert seasonality.average_return(df,'2015-11-03',22) > 0.0 # Avg. return to beginning of Dec.
         #assert seasonality.average_return('spy', '2015-11-05', '2M') > 0.0 # Avg return to beginning of Jan.

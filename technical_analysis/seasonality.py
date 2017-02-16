@@ -2,6 +2,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import logging as logger
 
+import pandas_market_calendars as mcal
 import numpy as np
 import pandas as pd
 
@@ -18,6 +19,12 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 # Rating colums (winrate): 1w, 2w, 3w, 4w, 2m, 3m, 4m, 5m, etc.
 # Average returns: 1w, 2w, 3w, 4w, 2m, 3m, 4m, 5m, etc.
 # example rule: only long if rating from todays close to 2w up to 2m is > 50
+
+
+class Seasonality:
+
+    def __init__(self):
+        print("Seasonality")
 
 
 def rebase(prices):
@@ -89,7 +96,7 @@ def trading_day_reindex(df, ticker, column):
     return pd.DataFrame({ticker: df.ix[:,column].values}).reindex(days)
 
 
-def average_return(seasonality_df, today, trading_days):
+def average_return(seasonality_df, trading_day, forward_days):
     """
     Calculate the forward return from 'today', only using month and day.
 

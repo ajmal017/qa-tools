@@ -59,12 +59,9 @@ Options:
     $ python3 market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider=google --plot-vs=SPY --plot-pct-levels=50,75,90
     ```
     ![% S&P500 stocks below/above 200DMA](images/sp500_200dma.png)
-    As seen, it is usually a good idea to decrease market exposure when then number of stocks below 200DMA is increasing
 
 
 3. Current realtime (possibly delayed) 50-Day Highs/Lows:
-
-    In case one want to adjust market exposure depending on the current market breadth
     
     Note: start date of analysis should include more tradingdays than lookback period
     ```
@@ -105,16 +102,13 @@ Options:
     ```
     ![% SPY vs. Seasonality](images/spy_seasonality.png)
     
-    Currently a bit streched on the upside?
-    
 2. Plot USO vs the seasonality using calendar labels:
     ```
     $ python3 seasonality.py --provider=yahoo --start 2005-01-01 --end 2016-12-31 --ticker USO --plot-vs USO --plot-label month
     ```
     ![% USO vs. Seasonality](images/uso_seasonality.png)
     
-    Perhaps selling some USO during late summer is a good idea. As least as while the crude oil futures market is contango. 
-    
+        
 #### TODO:
 * Additional breadth/internal indicators
 * Detailed analysis/plot of Bollinger breakout strategies 

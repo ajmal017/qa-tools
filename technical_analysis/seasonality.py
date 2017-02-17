@@ -2,29 +2,9 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import logging as logger
 
-import pandas_market_calendars as mcal
-import numpy as np
 import pandas as pd
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
-
-
-# Compare to SPY verifed edge, NOV-MAY, http://archive.aweber.com/awlist3824363/5qoFy/h/Closer_look_at_the.htm
-# "Predictive Average-kurvan baserad på de 3 föregående årens data visa negativ avkastning kommande månad"
-
-# During Nov-May, sell SPY ITM and closest OTM strike at close of third week each month
-# - check average loss, limited by 0.5, 1.0, 1.5 etc (the protection)
-
-# TA indicator:
-# Rating colums (winrate): 1w, 2w, 3w, 4w, 2m, 3m, 4m, 5m, etc.
-# Average returns: 1w, 2w, 3w, 4w, 2m, 3m, 4m, 5m, etc.
-# example rule: only long if rating from todays close to 2w up to 2m is > 50
-
-
-class Seasonality:
-
-    def __init__(self):
-        print("Seasonality")
 
 
 def rebase(prices):
@@ -68,6 +48,57 @@ def __normalized_per_year(df):
 
     return normalized.dropna().set_index(dates)
 
+def __normalized_per_month(df):
+    monthly_averages = []
+    month_columns = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+
+    groups_months = df.groupby(df.index.month)
+    for group_month in groups_months:
+        df_month = group_month[1]
+        groups_years = df_month.groupby(df_month.index.year)
+
+        min_month = None
+        min_days = 1000
+        slices = {} # Will contain one month, normalzied, stored per year
+        for group_years in groups_years:
+            closes = group_years[1]['Close'] # Closes for one month, one year
+            slices[group_years[0]] = trading_day_reindex(normalize(pd.DataFrame(closes)), group_years[0], 'Close')
+
+            if len(closes) < min_days:
+                min_days = len(closes)
+                min_month = group_years[1]
+            #for index, row in closes.iterrows():
+            #    average.set_value(index, group[0], row.values.mean())
+            #    return average
+        #df = pd.DataFrame(index=[i for i in range(1,30)])
+        # TODO: try different NaN methods, 'bfill', 'ffill', or drop all NaN
+        df = pd.concat([slices[slice] for slice in slices], axis=1).fillna(method='ffill') #.dropna()
+        average = pd.DataFrame()
+
+        #DEBUG
+        #if group_month[0] == 1:
+        #    print("Jan",df)
+
+        for index, row in df.iterrows():
+            average.set_value(index, month_columns[group_month[0]], row.values.mean())
+
+        # DEBUG
+        #if group_month[0] == 1:
+        #    print("Jan",average)
+        monthly_averages.append(average)
+
+    return monthly_averages
+
+
+def seasonality_monthly_returns(df):
+    ticker = df['Ticker'][0]
+    start_year = df.index[0]
+    end_year = df.index[-1]
+    logger.info("{0}: using data for {1} years".format(ticker, relativedelta(end_year, start_year).years))
+
+    normalized_monthly = __normalized_per_month(df)
+
+    return normalized_monthly
 
 def seasonality_returns(df):
     """
@@ -92,29 +123,23 @@ def seasonality_returns(df):
 
 
 def trading_day_reindex(df, ticker, column):
+    """
+    Reindex df with consecutive numbering
+    :param df: DataFrame
+    :param ticker: new column name
+    :param column: column in df to select
+    :return:
+    """
     days = range(1, len(df) - 1)
-    return pd.DataFrame({ticker: df.ix[:,column].values}).reindex(days)
+    return pd.DataFrame({ticker: df.ix[:, column].values}).reindex(days)
 
 
 def average_return(seasonality_df, trading_day, forward_days):
     """
-    Calculate the forward return from 'today', only using month and day.
-
-    Should probably use multiple calls with different forward dates to get more reliable prediction
-    (since dates differ year to year and seasonality df is reindexed as well)
-
-    Example:
-    today = '2015-10-03' and trading_days = '22'.
-    Get the expected return from trading day corresponding to Oct. 3 and 22 days forward
+    Get the seasonality return from trading_day to forward_days.
+    Should probably use multiple calls with different forward dates to get more reliable prediction.
+    (dates differ year to year and seasonality df is reindexed to shortest year in analysis)
     """
-    #print(seasonality_df)
-    #dt = datetime.datetime.strptime(today, "%Y-%m-%d")
-    #seasonality_year = seasonality_df.index[0].year
-    #seasonality_today = datetime.datetime(seasonality_year, dt.month, dt.day)
-    #forward_index = seasonality_df.index[seasonality_df.index.get_loc(seasonality_today) + trading_days]
-    #TODO: how to get trading day of the year for
-    return 0.0
-
-
-def win_rate(df, today, forward):
-    pass
+    rotational_index = int(trading_day + forward_days) % len(seasonality_df.index)
+    rotations = int((trading_day + forward_days) / len(seasonality_df.index))
+    return ((seasonality_df.iloc[rotational_index] + rotations * 100) - seasonality_df.iloc[int(trading_day)])[0]

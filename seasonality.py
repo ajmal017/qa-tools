@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import click
 import pandas as pd
-#import seaborn as sns
 import matplotlib.dates as mdates
 
 from dataprovider.dataprovider import CachedDataProvider
@@ -15,16 +14,13 @@ from technical_analysis import seasonality
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
-# https://ismayc.github.io/moderndiver-book/4-viz.html
-# Facets: per month
-
 @click.command(options_metavar='<options>')
 @click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'')
 @click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'')
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
 @click.option('--provider',type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize in same plot, e.g. \'SPY\'')
-@click.option('--monthly', is_flag=True, help='Plot monthly seasonality')
+@click.option('--monthly', is_flag=True, help='Subplot seasonality per month')
 @click.option('--plot-label', type=click.Choice(['day', 'calendar']), default='calendar',
               help='Label for x-axis. Use \'Day\' for trading day of year')
 def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, monthly):
@@ -34,26 +30,18 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
     df = data_provider.get_data(ticker, start, end, provider=provider)
 
     if monthly:
-        #TODO: rebase or not?
-        #rebased_dataframes = [df.apply(seasonality.rebase_days) for df in seasonality.seasonality_monthly_returns(df)]
         rebased_dataframes = [df for df in seasonality.seasonality_monthly_returns(df)]
 
-        #rebased_dataframes[1].plot()
-        #df = pd.concat(rebased_dataframes, axis=1)
-        #df.index.rename('Day',inplace=True)
-        #df.columns.rename('Month', inplace=True)
-        #print(df)
-
         fig = plt.figure()
-        fig.suptitle("{0} montly seasonality".format(ticker), fontsize=14)
+        fig.suptitle("{0} montly seasonality".format(ticker), fontsize=16)
         for i, data in enumerate(rebased_dataframes):
             ax = fig.add_subplot(4, 3, i + 1)
             ax.plot(data)
             ax.set_title(data.columns[0])
-            ax.set_xticks(data.index)
+            #ax.set_xticks(data.index)
             ax.set_yticks([])
 
-        fig.subplots_adjust(hspace=1)
+        plt.tight_layout()
         plt.show()
 
     else:
@@ -118,5 +106,5 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
         plt.show()
 
 if __name__ == '__main__':
-    #seasonality_analysis("UNG","google","2000-01-01","2016-12-31","UNG","day",True)
+    #seasonality_analysis("SPY","google","2000-01-01","2016-12-31","","day",True)
     seasonality_analysis()

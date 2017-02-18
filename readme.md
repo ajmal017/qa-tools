@@ -48,8 +48,6 @@ Options:
     ```
     ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_2.png)
     
-    Extreme strength is usually a bullish signal.
-    
     Note: this function takes approx. 20min to run on a MacBook Pro, 2.2Ghz, Mid-2014
 
 
@@ -84,16 +82,16 @@ Options:
 Usage: seasonality.py <options>
 
 Options:
-  --start TEXT               Starting year, e.g. '2005-01-01'
-  --end TEXT                 Ending year, e.g. '2015-12-31'
-  --ticker TEXT              Ticker to analyze, e.g. 'SPY'
+  --start TEXT                 Starting year, e.g. '2005-01-01'
+  --end TEXT                   Ending year, e.g. '2015-12-31'
+  --ticker TEXT                Ticker to analyze, e.g. 'SPY'
   --provider [yahoo|google]
-  --plot-vs TEXT             Which Stock/ETF to visualize in same plot, e.g.
-                             'SPY'
-  --plot-facets BOOLEAN      Plot monthly facets
-  --plot-label [day|month]   Label for x-axis. Use 'Day' for trading day of
-                             year
-  --help                     Show this message and exit.
+  --plot-vs TEXT               Which Stock/ETF to visualize in same plot, e.g.
+                               'SPY'
+  --monthly                    Subplot seasonality per month
+  --plot-label [day|calendar]  Label for x-axis. Use 'Day' for trading day of
+                               year
+  --help                       Show this message and exit
 ```
 ##### Examples
 1. Plot SPY vs. the seasonlity using trading days as labels: 
@@ -108,6 +106,12 @@ Options:
     ```
     ![% USO vs. Seasonality](images/uso_seasonality.png)
     
+3. Plot seasonality per month:
+    ```
+    $  python3 seasonality.py --start 2005-01-01 --end 2015-12-31 --ticker SPY --monthly
+    ```
+    ![% Monthly seasonality](images/spy_seasonality_monthly.png)
+        
         
 #### TODO:
 * Additional breadth/internal indicators

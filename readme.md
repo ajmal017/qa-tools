@@ -4,9 +4,10 @@ Analyze and plot market breadth, seasonality, etc.
 
 ## Installation
 ```
-$ git clone dataprovider
-$ git clone qa_tools
-$ virtualenv ... 
+$ git clone https://github.com/fbjarkes/dataprovider.git
+$ git clone https://github.com/fbjarkes/qa_tools.git
+$ virtualenv -p python3 venv
+
 $ pip3 install -r requirements.txt
 ```
 

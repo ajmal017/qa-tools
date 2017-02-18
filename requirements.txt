@@ -1,7 +1,7 @@
+cython
 pandas
 click
 requests_cache
 pandas_datareader
-dataprovider
 matplotlib
-seaborn
+dataprovider

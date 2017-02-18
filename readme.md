@@ -1,17 +1,33 @@
-## Quantative Analysis tools
+## Quantitative Analysis tools
 
 Analyze and plot market breadth, seasonality, etc.
 
+
 ## Installation
+* pandas, matplotlib, etc.
+* https://github.com/fbjarkes/dataprovider.git
+
+Install required libraries in virtualenv.
+
+#TODO: install in another way??
+### Install libraries
 ```
 $ git clone https://github.com/fbjarkes/dataprovider.git
-$ git clone https://github.com/fbjarkes/qa_tools.git
-$ virtualenv -p python3 venv
-
-$ pip3 install -r requirements.txt
+$ virtualenv -p python3 . && source bin/activate
+$ pip install -r dataprovider/requirements.txt
+$ python dataprovider/setup.py install 
 ```
 
-#### Market breadth analysis
+### Install 
+```
+$ git clone https://github.com/fbjarkes/qa_tools.git
+$ pip install -r dataprovider/requirements.txt
+
+$ pip install -r qa_tools/requirements.txt
+$ cd qa_tools
+```
+
+## Market breadth analysis
 ```
 Usage: market_breadth.py <options> <function> <lookback>
 
@@ -78,7 +94,7 @@ Options:
     
     ```
     
-#### Sesonality
+## Sesonality
 ```
 Usage: seasonality.py <options>
 

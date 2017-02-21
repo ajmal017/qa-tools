@@ -2,29 +2,35 @@
 
 Analyze and plot market breadth, seasonality, etc.
 
+## Python requirements 
+* python3
+* setuptools
+* pip
+* virtualenv
+* pandas, matplotlib, pyts, etc. (from requirements.txt)
+* wrapper for pandas-datareader (https://github.com/fbjarkes/dataprovider.git)
 
 ## Installation
-* pandas, matplotlib, etc.
-* https://github.com/fbjarkes/dataprovider.git
-
-Install required libraries in virtualenv.
-
-#TODO: install in another way??
-### Install libraries
+### Install tools and required libraries
+1. Init virtual environment:
+```
+$ virtualenv .
+$ source bin/activate
+```
+2. Install the dataprovider-library from git: 
 ```
 $ git clone https://github.com/fbjarkes/dataprovider.git
-$ virtualenv -p python3 . && source bin/activate
 $ pip install -r dataprovider/requirements.txt
-$ python dataprovider/setup.py install 
+$ cd dataprovider && python setup.py install && cd ..
 ```
-
-### Install 
+3. Clone repo:
 ```
 $ git clone https://github.com/fbjarkes/qa_tools.git
-$ pip install -r dataprovider/requirements.txt
-
 $ pip install -r qa_tools/requirements.txt
-$ cd qa_tools
+```
+4. Possibly needed before invoking scripts in qa_tools:
+```
+$ export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 ```
 
 ## Market breadth analysis
@@ -129,9 +135,4 @@ Options:
     ```
     ![% Monthly seasonality](images/spy_seasonality_monthly.png)
         
-        
-#### TODO:
-* Additional breadth/internal indicators
-* Detailed analysis/plot of Bollinger breakout strategies 
-* Support for OMXS30 (Swedish) stocks
-* Fixes/Optimizations
+       

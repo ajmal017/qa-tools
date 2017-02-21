@@ -1,17 +1,39 @@
-## Quantative Analysis tools
+## Quantitative Analysis tools
 
 Analyze and plot market breadth, seasonality, etc.
 
+## Python requirements 
+* python3
+* setuptools
+* pip
+* virtualenv
+* pandas, matplotlib, pyts, etc. (from requirements.txt)
+* wrapper for pandas-datareader (https://github.com/fbjarkes/dataprovider.git)
+
 ## Installation
+### Install tools and required libraries
+1. Init virtual environment:
+```
+$ virtualenv .
+$ source bin/activate
+```
+2. Install the dataprovider-library from git: 
 ```
 $ git clone https://github.com/fbjarkes/dataprovider.git
+$ pip install -r dataprovider/requirements.txt
+$ cd dataprovider && python setup.py install && cd ..
+```
+3. Clone repo:
+```
 $ git clone https://github.com/fbjarkes/qa_tools.git
-$ virtualenv -p python3 venv
-
-$ pip3 install -r requirements.txt
+$ pip install -r qa_tools/requirements.txt
+```
+4. Possibly needed before invoking scripts in qa_tools:
+```
+$ export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 ```
 
-#### Market breadth analysis
+## Market breadth analysis
 ```
 Usage: market_breadth.py <options> <function> <lookback>
 
@@ -78,7 +100,7 @@ Options:
     
     ```
     
-#### Sesonality
+## Sesonality
 ```
 Usage: seasonality.py <options>
 
@@ -113,9 +135,4 @@ Options:
     ```
     ![% Monthly seasonality](images/spy_seasonality_monthly.png)
         
-        
-#### TODO:
-* Additional breadth/internal indicators
-* Detailed analysis/plot of Bollinger breakout strategies 
-* Support for OMXS30 (Swedish) stocks
-* Fixes/Optimizations
+       

@@ -3,11 +3,18 @@
 import datetime
 import logging as logger
 
-import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.dates as mdates
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+try:
+    import tkinter # should fail on AWS images with no GUI available
+    import matplotlib.pyplot as plt
+except:
+    matplotlib.use('Agg')
+
 import click
 import pandas as pd
-import matplotlib.dates as mdates
+
 
 from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis import seasonality

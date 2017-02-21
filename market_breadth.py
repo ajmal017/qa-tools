@@ -3,10 +3,16 @@
 import datetime
 import logging as logger
 
-import matplotlib.pyplot as plt
-import matplotlib
 import click
 import pandas as pd
+
+import matplotlib
+try:
+    import tkinter # should fail on AWS images with no GUI available
+    import matplotlib.pyplot as plt
+except:
+    matplotlib.use('Agg')
+
 
 from technical_analysis import ta
 import technical_analysis.column_names as ta_columns
@@ -127,7 +133,7 @@ def hilo_analysis(kwargs, df_list, plot_vs):
 @click.option('--quotes', is_flag=True, help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize breadth, e.g. \'SPY\'')
 @click.option('--plot-pct-levels', default='50,75,90', type=click.STRING, help='Comma separated list, e.g. \'75,90\' to visulize when 75% and 90% of stocks making 20-Day highs/lows')
-def market_internals(function, lookback, start, end, tickers, file, provider, quotes, plot_vs, plot_pct_levels):
+def main(function, lookback, start, end, tickers, file, provider, quotes, plot_vs, plot_pct_levels):
     """
     Tool for analyzing and plotting market internals
 
@@ -189,4 +195,4 @@ def market_internals(function, lookback, start, end, tickers, file, provider, qu
 
 
 if __name__ == '__main__':
-    market_internals()
+    main()

@@ -1,10 +1,11 @@
 import numpy as np
+import talib
 
 from technical_analysis.column_names import *
 
 
-def add_ma(dataframe, days):
-    dataframe[ma_name(days)] = np.round(dataframe["Close"].rolling(window=days, center=False).mean(), 2)
+def add_ma(dataframe, lookback):
+    dataframe[ma_name(lookback)] = np.round(dataframe["Close"].rolling(window=lookback, center=False).mean(), 2)
     return dataframe
 
 
@@ -13,6 +14,12 @@ def add_ma_slope(dataframe, lookback):
     dataframe[ma_slope_name(lookback)] = (mean-mean.shift()).apply(lambda x: 1 if x > 0 else -1)
     return dataframe
 
+def add_atr(dataframe, lookback):
+    dataframe.fillna(inplace=True, method='ffill')
+    atr = talib.ATR(dataframe['High'].values, dataframe['Low'].values, dataframe['Close'].values, timeperiod=lookback)
+    dataframe[atr_name(lookback)] = atr
+    #dataframe['tmp'] = np.round(dataframe[atr_name(lookback)].rolling(window=5, center=False).mean(), 2)
+    return dataframe
 
 def highest(df):
     """ Get the highest order of the last entry """

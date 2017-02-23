@@ -30,7 +30,7 @@ class MarketInternals:
         logger.info("Processing results")
         t0 = datetime.now()
         res = MarketInternals.process_results(results, from_date, to_date, columns)
-        logger.info("Done in {0}".format(datetime.now()-t0))
+        logger.info("Done in {0}".format((datetime.now()-t0).total_seconds()))
         return res
 
     @staticmethod
@@ -87,7 +87,7 @@ class MarketInternals:
             if ta.lowest(df[:index]['Close']) >= lookback:
                 lows.append(row.name)
 
-        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0).total_seconds()))
         return results
 
     # TODO: cache method?
@@ -105,6 +105,6 @@ class MarketInternals:
                 below.append(row.name)
             else:
                 above.append(row.name)
-        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0).total_seconds()))
         return results
 

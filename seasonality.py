@@ -21,6 +21,7 @@ from technical_analysis import seasonality
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
+
 @click.command(options_metavar='<options>')
 @click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'')
 @click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'')

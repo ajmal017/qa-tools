@@ -23,7 +23,7 @@ $ git clone https://github.com/fbjarkes/dataprovider.git
 $ pip install -r dataprovider/requirements.txt
 $ cd dataprovider && python setup.py install && cd ..
 ```
-3. Clone repo:
+3. Clone repository:
 ```
 $ git clone https://github.com/fbjarkes/qa_tools.git
 $ pip install -r qa_tools/requirements.txt
@@ -67,7 +67,7 @@ Options:
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
     ```
-    $ python3 market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=40,50,60
+    $ python3 market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=30,40,50
     ```
     ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_2.png)
     

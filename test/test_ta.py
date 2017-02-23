@@ -2,6 +2,7 @@ import unittest
 
 from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis import ta
+from technical_analysis import seasonality
 from technical_analysis.column_names import *
 
 
@@ -35,14 +36,14 @@ class TestTechnicalAnalysis(unittest.TestCase):
 
     def test_seasonality(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2016-01-01')
-        seasonality = ta.seasonality([spy_daily])
+        spy_seasonality = seasonality.seasonality_returns([spy_daily])
 
         #SPY: Nov to May
-        assert seasonality.average_return('spy','2015-11-05','1M') > 0.0 # Avg. return to beginning of Dec.
-        assert seasonality.average_return('spy', '2015-11-05', '2M') > 0.0 # Avg return to beginning of Jan.
-        assert seasonality.average_return('spy', '2015-11-05', '3M') > 0.0  # Avg return to beginning of Feb.
-        assert seasonality.average_return('spy', '2015-11-05', '4M') > 0.0  # Avg return to beginning of Mar.
-        assert seasonality.average_return('spy', '2015-11-05', '5M') > 0.0  # Avg return to beginning of May
+        assert spy_seasonality.average_return('spy','2015-11-05','1M') > 0.0 # Avg. return to beginning of Dec.
+        assert spy_seasonality.average_return('spy', '2015-11-05', '2M') > 0.0 # Avg return to beginning of Jan.
+        assert spy_seasonality.average_return('spy', '2015-11-05', '3M') > 0.0  # Avg return to beginning of Feb.
+        assert spy_seasonality.average_return('spy', '2015-11-05', '4M') > 0.0  # Avg return to beginning of Mar.
+        assert spy_seasonality.average_return('spy', '2015-11-05', '5M') > 0.0  # Avg return to beginning of May
 
         #assert seasonality.py.average_return('spy', '2016-11-05', '5M') > 0.0  # Throw error, lookahead bias?
 

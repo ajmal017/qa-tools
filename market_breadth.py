@@ -27,7 +27,6 @@ def get_tickers(file):
         return [ticker.rstrip() for ticker in f.readlines()]
 
 
-
 def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, title):
     """
     ticker: datatframe column to plot with regular line style

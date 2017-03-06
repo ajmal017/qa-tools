@@ -48,5 +48,12 @@ class TestTechnicalAnalysis(unittest.TestCase):
         #assert seasonality.py.average_return('spy', '2016-11-05', '5M') > 0.0  # Throw error, lookahead bias?
 
 
+    def test_atr_weekly(self):
+
+        spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2016-01-01', timeframe='week')
+        ta.add_atr(spy_daily, 2)
+        print(spy_daily)
+
+
 if __name__ == '__main__':
     unittest.main()

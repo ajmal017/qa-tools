@@ -29,4 +29,4 @@ def below_dma_pct_name(lookback):
     return "BELOW_{0}DMA_PCT".format(lookback)
 
 def atr_name(lookback):
-    return "ATR_{0}".format(lookback)
+    return "{0}-ATR".format(lookback)

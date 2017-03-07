@@ -30,3 +30,6 @@ def below_dma_pct_name(lookback):
 
 def atr_name(lookback):
     return "{0}-ATR".format(lookback)
+
+def rocp_name(lookback):
+    return "{0}-ROC_PCT".format(lookback)

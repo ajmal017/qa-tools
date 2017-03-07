@@ -67,7 +67,7 @@ Options:
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
     ```
-    $ python3 market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=30,40,50
+    $ ./market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=30,40,50
     ```
     ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_2.png)
     
@@ -77,7 +77,7 @@ Options:
 2. Above/below 200DMA breadth: 
     Plot market breadth with 'dma' function, i.e. all stocks below or above 200DMA:
     ```
-    $ python3 market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider=google --plot-vs=SPY --plot-pct-levels=50,75,90
+    $ ./market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider=google --plot-vs=SPY --plot-pct-levels=50,75,90
     ```
     ![% S&P500 stocks below/above 200DMA](images/sp500_200dma.png)
 
@@ -86,7 +86,7 @@ Options:
     
     Note: start date of analysis should include more tradingdays than lookback period
     ```
-    $ python3 market_breadth.py --start 2016-11-01 --file=sp500.txt hilo 50 --provider=google --quotes
+    $ ./market_breadth.py --start 2016-11-01 --file=sp500.txt hilo 50 --provider=google --quotes
                 DAY_HIGH_50  DAY_HIGH_PCT_50  DAY_LOW_50  DAY_LOW_PCT_50
     ...
     2017-02-01         42.0         8.624230        39.0        8.008214
@@ -119,19 +119,19 @@ Options:
 ##### Examples
 1. Plot SPY vs. the seasonlity using trading days as labels: 
     ```
-    $ python3 seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
+    $ ./seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
     ```
     ![% SPY vs. Seasonality](images/spy_seasonality.png)
     
 2. Plot USO vs the seasonality using calendar labels:
     ```
-    $ python3 seasonality.py --provider=yahoo --start 2005-01-01 --end 2016-12-31 --ticker USO --plot-vs USO --plot-label month
+    $ ./seasonality.py --provider=yahoo --start 2005-01-01 --end 2016-12-31 --ticker USO --plot-vs USO --plot-label month
     ```
     ![% USO vs. Seasonality](images/uso_seasonality.png)
     
 3. Plot seasonality per month:
     ```
-    $  python3 seasonality.py --start 2005-01-01 --end 2015-12-31 --ticker SPY --monthly
+    $  ./seasonality.py --start 2005-01-01 --end 2015-12-31 --ticker SPY --monthly
     ```
     ![% Monthly seasonality](images/spy_seasonality_monthly.png)
         

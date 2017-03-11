@@ -1,6 +1,6 @@
 ## Quantitative Analysis tools
 
-Analyze and plot market breadth, seasonality, etc.
+Analyze and plot market breadth, seasonality, strategy/portfolio analysis, etc.
 
 ## Python requirements 
 * python3
@@ -136,3 +136,26 @@ Options:
     ![% Monthly seasonality](images/spy_seasonality_monthly.png)
         
        
+## Monte Carlo Analysis
+```
+Usage: monte_carlo_analysis.py <options>
+
+Options:
+  --prob-win FLOAT       Probability for winning trade, e.g. 0.65  [required]
+  --profit-avg FLOAT     The average profit, e.g. 100  [required]
+  --loss-avg FLOAT       The average loss, e.g. 50  [required]
+  --trades INTEGER       Number of trades used for simulation
+  --equity INTEGER       Starting equity
+  --risk FLOAT           Percent of portfolio to risk, e.g. 2 for 2%. If 0 use
+                         kelly sizing.
+  --simulations INTEGER  Number of simulations
+  --plot                 Plot equity curves
+  --help                 Show this message and exit.
+```
+##### Examples
+1. Plot SPY vs. the seasonlity using trading days as labels: 
+    ```
+    $ ./seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
+    ```
+    ![% SPY vs. Seasonality](images/spy_seasonality.png)
+    

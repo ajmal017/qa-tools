@@ -1,5 +1,10 @@
 ## PUBLIC
 
+### TODO: technical_analysis/market_internal.py
+* use ffn.utils.memoize for all intensive functions
+* https://github.com/shaypal5/cachier
+* https://github.com/joblib/joblib
+
 ### TODO: technical_analysis/weekly_tight_range.py:
 * Finalize cmdline analysis with statistics
 * Make general methods

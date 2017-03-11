@@ -9,6 +9,8 @@
 * Create a data set with all the performances of the equity curves
 * Estimate the mean performance using bootstrap vs. just taking the mean of performances
 
+## TODO: technical_analysis/weekly_tight_range.py:
+* Add RVOL, ADV, etc. according to original rules
 
 ### TODO: technical_analysis/ehlers.py
 * super smoother

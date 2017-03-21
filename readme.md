@@ -69,7 +69,7 @@ Options:
     ```
     $ ./market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=30,40,50
     ```
-    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_2.png)
+    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo.png)
     
     Note: this function takes approx. 20min to run on a MacBook Pro, 2.2Ghz, Mid-2014
 
@@ -119,15 +119,15 @@ Options:
 ##### Examples
 1. Plot SPY vs. the seasonlity using trading days as labels: 
     ```
-    $ ./seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
+    $ ./seasonality_analysis.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
     ```
     ![% SPY vs. Seasonality](images/spy_seasonality.png)
     
-2. Plot USO vs the seasonality using calendar labels:
+2. Plot OMXS30 vs the seasonality using calendar labels:
     ```
-    $ ./seasonality.py --provider=yahoo --start 2005-01-01 --end 2016-12-31 --ticker USO --plot-vs USO --plot-label month
+    $ ./seasonality_analysis.py --start 2005-01-01 --end 2016-12-31 --plot-vs ^OMX --ticker ^OMX --provider yahoo
     ```
-    ![% USO vs. Seasonality](images/uso_seasonality.png)
+    ![% OMXS30 vs. Seasonality](images/omxs30_seasonality.png)
     
 3. Plot seasonality per month:
     ```
@@ -153,9 +153,9 @@ Options:
   --help                 Show this message and exit.
 ```
 ##### Examples
-1. Plot SPY vs. the seasonlity using trading days as labels: 
+1. Equity curves for 10 Monte Carlo simulations:
     ```
-    $ ./seasonality.py --provider yahoo --start 2005-01-01 --end 2016-12-31 --ticker SPY --plot-vs SPY --plot-label day
+    $ ./monte_carlo_analysis.py --prob-win 0.55 --profit-avg 100 --loss-avg 100 --trades 1000 --equity 10000 --simulations 10 --plot
     ```
-    ![% SPY vs. Seasonality](images/spy_seasonality.png)
+    ![% MC](images/mc_1.png)
     

@@ -188,12 +188,7 @@ class MonteCarloTest:
         stats['dd_max_avg_pct'] /= len(equity_curves)
         stats['perf_avg_pct'] /= len(equity_curves)
 
-        # Wins/Losses
-        stats['consecutive_wins'] = 0
-        stats['consecutive_losses'] = 0
-
         return stats
-
 
     @staticmethod
     def plot_equity_curves(equity_curves):

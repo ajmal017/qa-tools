@@ -138,24 +138,47 @@ Options:
        
 ## Monte Carlo Analysis
 ```
-Usage: monte_carlo_analysis.py <options>
+Usage: monte_carlo_analysis.py [OPTIONS]
+
+  Command line tool for simulating equity curves.
 
 Options:
-  --prob-win FLOAT       Probability for winning trade, e.g. 0.65  [required]
-  --profit-avg FLOAT     The average profit, e.g. 100  [required]
-  --loss-avg FLOAT       The average loss, e.g. 50  [required]
-  --trades INTEGER       Number of trades used for simulation
-  --equity INTEGER       Starting equity
-  --risk FLOAT           Percent of portfolio to risk, e.g. 2 for 2%. If 0 use
-                         kelly sizing.
-  --simulations INTEGER  Number of simulations
+  --prob-win FLOAT       Probability for winning trade, e.g. 0.65 for 65%
+                         [required]
+  --profit-avg FLOAT     The average profit, e.g. "100" for $100  [required]
+  --loss-avg FLOAT       The average loss, e.g. "50" for -$50  [required]
+  --trades INTEGER       Number of trades used in simulations
+  --equity INTEGER       Starting equity, e.g 10000 for $10000
+  --risk FLOAT           Percent of portfolio to risk, e.g. 0.02 for 2%. If 0
+                         use kelly sizing
+  --dynamic-size         Add profits/losses cumulatively to equity and
+                         increase position size
+  --simulations INTEGER  Number of simulations, e.g. 10
   --plot                 Plot equity curves
   --help                 Show this message and exit.
 ```
 ##### Examples
-1. Equity curves for 10 Monte Carlo simulations:
+1. 100 Monte Carlo simulations with 1000 trades using Kelly position size (W – ((1 – W) / R)):
     ```
-    $ ./monte_carlo_analysis.py --prob-win 0.55 --profit-avg 100 --loss-avg 100 --trades 1000 --equity 10000 --simulations 10 --plot
+    $ ./monte_carlo_analysis.py --prob-win 0.55 --profit-avg 100 --loss-avg 100 --trades 1000 --equity 10000 --simulations 100 --plot
+    Running 100 simulations with 10.0% risk (Kelly size) of 10000 starting equity.
+    P_win=0.55, Avg.Profit=100.0, Avg.Loss=100.0
+    Min equity: 0
+    Max equity: 190000.1
+    Performance avg: 975.6%
+    Max Drawdown: 111.11%
+    Average Max Drawdown: 52.54%
+    Risk of ruin: 4.0%
     ```
     ![% MC](images/mc_1.png)
     
+
+## Combined Returns
+```
+```
+
+##### Examples
+1. TODO: Combine Telecom companies (TEL2-B, TELIA,...)
+    ```
+    $ ./combined_returns.py --tickers TEL2-B.ST, TELIA.ST --start 2005-01-01 --ta DMA --ta-param 200
+    ```

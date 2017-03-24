@@ -33,134 +33,119 @@ class MonteCarloTest:
         """
         return pd.DataFrame(trades, columns=["Trade","PnL"])
 
-    def simulate_trades(self, simulations, p_high, p_mid, avg_win, avg_loss, max_loss):
+    def simulate_fixed_trades(self, simulations, p_win, p_mid, profit, mid_loss, loss):
         trades = []
-        if self.trades_df:
-            raise Exception("Not implemented yet")
-        else:
-            if p_mid == 0.0:
-                max_loss = avg_loss
 
-            # generate trades based on probabilities
-            for i in range(0, simulations):
-                rand = random.random()
+        # generate trades based on probabilities
+        for i in range(0, simulations):
+            rand = random.random()
+            if rand <= p_win:
+                pnl = profit
+            elif rand <= p_win + p_mid:
+                pnl = -mid_loss
+            else:
+                pnl = -loss
 
-                if rand <= p_high:
-                    pnl = avg_win
-                elif rand <= p_high+p_mid:
-                    pnl = avg_loss
-                else:
-                    pnl = max_loss
+            trades.append({"Trade": 1 + i, "PnL": pnl})
 
-                trades.append({"Trade":1+i, "PnL": pnl})
+        return pd.DataFrame(trades, columns=["Trade", "PnL"])
+
+    def simulate_trades(self, simulations, p_win, profit, loss, start_equity, risk, dynamic_size):
+        trades = []
+
+        r_win = profit/loss
+
+        # generate trades based on probabilities
+        equity = start_equity
+        for i in range(0, simulations):
+            rand = random.random()
+
+            if rand <= p_win:
+                pnl = (equity*risk*r_win)
+            else:
+                pnl = -(equity*risk)
+
+            if dynamic_size:
+                equity += pnl
+
+            trades.append({"Trade":1+i, "PnL": pnl})
 
         return pd.DataFrame(trades, columns=["Trade","PnL"])
 
-    def simulate(self, p_high, p_mid, profit_avg, loss_avg, max_loss, trade_count=100, equity=10000, risk=0.0,
-                 reinvest=False, sim_count=100, plot=False):
-        """
-        Example stats:
-        Kelly: 0.06 Expectation: 0.01
-        biggest max drawdown: 64.6% (96) avg. max drawdown: 34.2%
-        min. Equity: 36 max. Equity: 279
-        avg. performance: 16.2% (16)
-        return on max drawdown: 0.2
-        max consecutive winner: 52 max consecutive loser: 5
-        """
+    def simulate(self, p_high, p_mid, profit, loss_mid, loss, trade_count=100, equity=10000, risk=0.0,
+                 dynamic_size=False, sim_count=100, plot=False):
         if risk == 0.0:
             # Use Kelly sizing:  W – ((1 – W) / R)
-            r = (profit_avg/loss_avg)
+            r = (profit/loss)
             risk = p_high - (1.0 - p_high)/r
-            risk *= 0.01
+            #risk *= 0.01
             risk_type = "Kelly size"
         else:
             risk_type = "% of Cap."
 
-        click.echo("Running {0} simulations with {1}% risk ({2}) of {3} starting equity.".format(sim_count, risk, risk_type, equity))
+        click.echo("Running {0} simulations with {1}% risk ({2}) of {3} starting equity.".format(sim_count, round(risk*100,2), risk_type, equity))
+        if dynamic_size:
+            click.echo("Adding profits/losses cumulatiely to equity")
 
         trade_simulations = []
 
         if p_mid > 0.0:
-            #TODO: handle this scenario
-            click.echo("P_high={0}, P_mid={1}, Avg.Profit={2}, Avg.Loss={3}, MaxLoss={4}".format(p_high, p_mid, profit_avg, loss_avg, max_loss))
+            click.echo("P_high={0}, P_mid={1}, Avg.Profit={2}, Avg.Loss={3}, MaxLoss={4}".format(p_high, p_mid, profit, loss_mid, loss))
             avg_pnl = 0
             for i in range(0, sim_count):
-                sim = self.simulate_trades(trade_count, p_high, p_mid, profit_avg, loss_avg, max_loss)
+                sim = self.simulate_fixed_trades(trade_count, p_high, p_mid, profit, loss_mid, loss)
                 trade_simulations.append(sim)
                 avg_pnl += sim['PnL'].mean()
             avg_pnl /= sim_count
-
-            click.echo("{0} simulations {1} trades each:".format(sim_count, trade_count))
             click.echo("Average PnL per trade: {0}".format(avg_pnl))
 
-            if plot:
-                fig, ax = plt.subplots()
-                for curve in trade_simulations:
-                    ax = curve['PnL'].cumsum().plot(ax=ax)
-                ax.set_ylabel("Equity")
-                ax.set_xlabel("# Trades")
-                plt.title("{0} Monte Carlo Simulations".format(len(trade_simulations)))
-                plt.show()
-
         else:
-            click.echo("P_win={0}, Avg.Profit={1}, Avg.Loss={2}".format(p_high, profit_avg, loss_avg))
+            click.echo("P_win={0}, Avg.Profit={1}, Avg.Loss={2}".format(p_high, profit, loss))
             for i in range(0, sim_count):
                 trade_simulations.append(
-                    self.simulate_trades(trade_count, p_high, p_mid, profit_avg, loss_avg, max_loss))
+                    self.simulate_trades(trade_count, p_high, profit, loss, equity, risk, dynamic_size))
 
-            equity_curves = MonteCarloTest.portfolio_simulations(equity, risk, profit_avg, loss_avg,
-                                                                 trade_simulations, reinvest)
-            stats = MonteCarloTest.equity_curve_stats(equity_curves)
+        # Generate equity curves from trades
+        equity_curves = MonteCarloTest.portfolio_simulations(equity, trade_simulations)
 
-            click.echo("Min equity: {0}".format(round(stats['equity_min'],1)))
-            click.echo("Max equity: {0}".format(round(stats['equity_max'],1)))
-            click.echo("Performance avg: {0}%".format(round(stats['perf_avg_pct'], 1)))
-            click.echo("Max Drawdown: {0}%".format(round(stats['dd_max_pct'],2)))
-            click.echo("Average Max Drawdown: {0}%".format(round(stats['dd_max_avg_pct'],2)))
-            click.echo("Consecutive wins: {0}".format(stats['consecutive_wins']))
-            click.echo("Consecutive losses: {0}".format(stats['consecutive_losses']))
+        # Get statistics from generated equity curves
+        stats = MonteCarloTest.equity_curve_stats(equity_curves)
+        click.echo("Min equity: {0}".format(round(stats['equity_min'],1)))
+        click.echo("Max equity: {0}".format(round(stats['equity_max'],1)))
+        click.echo("Performance avg: {0}%".format(round(stats['perf_avg_pct'], 1)))
+        click.echo("Max Drawdown: {0}%".format(round(stats['dd_max_pct'],2)))
+        click.echo("Average Max Drawdown: {0}%".format(round(stats['dd_max_avg_pct'],2)))
+        click.echo("Risk of ruin: {0}%".format(round(stats['risk_ruin'], 8)))
 
-            #TODO: monte carlo analysis of performance, i.e. end_value-start_value (in percent)
-            # 1. Generate equity curves, i.e. 1000 performance values
-            # 2. Plot histogram
-            # 3. Plot cumulative distribution Mark where 95% of all performances are higher than
-            if plot:
-                MonteCarloTest.plot_equity_curves(equity_curves)
-                #for eq in equity_curves:
-                #    eq['EQ'].plot()
-                #plt.show()
+        #TODO: monte carlo analysis of performance, i.e. end_value-start_value (in percent)
+        # 1. Generate equity curves, i.e. 1000 performance values
+        # 2. Plot histogram
+        # 3. Plot cumulative distribution Mark where 95% of all performances are higher than
+        if plot:
+            MonteCarloTest.plot_equity_curves(equity_curves)
+            #for eq in equity_curves:
+            #    eq['EQ'].plot()
+            #plt.show()
 
     @staticmethod
-    def portfolio_simulations(start_equity, risk_pct, profit_avg, loss_avg, trade_simulations, reinvest):
-        """
-        Generate equity curves using the defined risk per trade and starting equity
-        """
+    def portfolio_simulations(start_equity, trade_simulations):
+
         equity_curves = []
-        pnl_relation = profit_avg/loss_avg
 
         for sim in trade_simulations:
-            eq = pd.DataFrame(columns=['EQ', 'DECIMAL_RET', 'PNL'], index=sim.index)
-            equity = start_equity
+            eq = pd.DataFrame(columns=['EQ'], index=sim.index)
+            equity = start_equity+0.1 # In case first trade wipes out everthing
             for index, row in sim.iterrows():
-                #TOOD: use portfolio lib?
-
-                # Must explicitly calculate equity in order for MM to work properly
-                eq.set_value(index, 'EQ', equity)
-                if reinvest:
-                    pnl = equity*risk_pct
+                if equity > 0:
+                    equity += row['PnL']
+                    eq.set_value(index, 'EQ', equity)
                 else:
-                    pnl = start_equity*risk_pct
+                    # Stop here or just set the rest to zero?
+                    eq.set_value(index, 'EQ', 0)
 
-                if row['PnL'] > 0:
-                    eq.set_value(index, 'PNL', pnl)
-                    eq.set_value(index, 'DECIMAL_RET', risk_pct)
-                    equity += pnl
 
-                else:
-                    eq.set_value(index, 'PNL', -pnl)
-                    eq.set_value(index, 'DECIMAL_RET', -risk_pct)
-                    equity -= pnl
-
+            #if eq['EQ'].iloc[-1] == 0:
+            #    print(sim)
             equity_curves.append(eq)
             #TODO: what more from ffn lib?
 
@@ -177,9 +162,13 @@ class MonteCarloTest:
         stats['dd_max_avg_pct'] = 0
         stats['dd_max_pct'] = 0
         stats['perf_avg_pct'] = 0
+        stats['risk_ruin'] = 0
         for eq in equity_curves:
             eq_curve = eq['EQ']
-            #dd = ffn.to_drawdown_series(eq_curve)
+
+            if eq_curve.iloc[-1] == 0:
+                stats['risk_ruin'] += 1
+
             stats['perf_avg_pct'] += ((eq_curve.iloc[-1] - eq_curve.iloc[0]) / eq_curve.iloc[0])*100
             max_dd = -ffn.calc_max_drawdown(eq_curve)*100
             stats['dd_max_pct'] = max(max_dd,stats['dd_max_pct'])
@@ -187,6 +176,7 @@ class MonteCarloTest:
 
         stats['dd_max_avg_pct'] /= len(equity_curves)
         stats['perf_avg_pct'] /= len(equity_curves)
+        stats['risk_ruin'] = stats['risk_ruin']*100 / len(equity_curves)
 
         return stats
 
@@ -203,23 +193,28 @@ class MonteCarloTest:
         plt.show()
 
 
+def float_range(ctx, param, value):
+    if value <= 1.0 and value >= 0.0:
+        return value
+    raise click.BadParameter('Risk: 0 <= 1')
+
+
 @click.command()
 @click.option('--prob-win', required=True, type=click.FLOAT, help='Probability for winning trade, e.g. 0.65 for 65%')
 @click.option('--profit-avg', required=True, type=click.FLOAT, help='The average profit, e.g. "100" for $100')
 @click.option('--loss-avg', required=True, type=click.FLOAT, help='The average loss, e.g. "50" for -$50')
-@click.option('--trades', default=100, type=click.INT, help='Number of trades used for simulation')
+@click.option('--trades', default=100, type=click.INT, help='Number of trades used in simulations')
 @click.option('--equity', default=1000, type=click.INT, help='Starting equity, e.g 10000 for $10000')
-@click.option('--risk', default=0.0, type=click.FLOAT, help='Percent of portfolio to risk, e.g. 0.02 for 2%. If 0 use kelly sizing.')
-@click.option('--reinvest', is_flag=True, help='Money management technique for reinvesting all profits/losses')
-@click.option('--simulations', default=100, type=click.INT, help='Number of simulations')
+@click.option('--risk', default=0.0, type=click.FLOAT,  callback=float_range, help='Percent of portfolio to risk, e.g. 0.02 for 2%. If 0 use kelly sizing')
+@click.option('--dynamic-size', is_flag=True, help='Add profits/losses cumulatively to equity and increase position size')
+@click.option('--simulations', default=10, type=click.INT, help='Number of simulations, e.g. 10')
 @click.option('--plot', is_flag=True, help="Plot equity curves")
-def main(prob_win, profit_avg, loss_avg, trades, equity, risk, reinvest, simulations, plot):
+def main(prob_win, profit_avg, loss_avg, trades, equity, risk, dynamic_size, simulations, plot):
     """Command line tool for simulating equity curves."""
 
-    MonteCarloTest(None).simulate(prob_win, 0, profit_avg, -loss_avg, 0,
+    MonteCarloTest(None).simulate(prob_win, 0, profit_avg, 0, loss_avg,
                                   trade_count=trades, equity=equity, risk=risk,
-                                  reinvest=reinvest, sim_count=simulations, plot=plot)
-
+                                  dynamic_size=dynamic_size, sim_count=simulations, plot=plot)
 
 
 if __name__ == '__main__':

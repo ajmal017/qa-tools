@@ -71,7 +71,7 @@ Options:
     ```
     ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo.png)
     
-    Note: this function takes approx. 20min to run on a MacBook Pro, 2.2Ghz, Mid-2014
+    Note: this function could take approx. 20min to complete
 
 
 2. Above/below 200DMA breadth: 

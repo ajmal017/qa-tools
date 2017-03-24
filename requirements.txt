@@ -5,3 +5,4 @@ requests_cache
 pandas_datareader
 matplotlib
 dataprovider
+ffn

@@ -19,13 +19,7 @@ class TestMarketInternals(unittest.TestCase):
         gm = self.testdata_provider.get_data(ticker="GM", from_date='2016-01-01', to_date='2017-01-01')
         tickers = [aapl, msft, gm]
 
-        columns = {
-            'high_or_above': ta_columns.day_high_name(50),
-            'high_or_above_pct': ta_columns.day_high_pct_name(50),
-            'low_or_below': ta_columns.day_low_name(50),
-            'low_or_below_pct': ta_columns.day_low_pct_name(50)
-        }
-        breadth = MarketInternals().breadth(tickers, 50, '2016-01-01', '2017-01-01', columns, MarketInternals.hilo)
+        breadth = MarketInternals().breadth(tickers, 50, '2016-01-01', '2017-01-01', MarketInternals.hilo)
         assert 0 == breadth.loc['20161223'][ta_columns.day_low_name(50)]
 
 
@@ -38,13 +32,7 @@ class TestMarketInternals(unittest.TestCase):
         for ticker in tickers:
             ta.add_ma(ticker, 200)
 
-        columns = {
-            'high_or_above': ta_columns.above_dma_name(200),
-            'high_or_above_pct': ta_columns.above_dma_pct_name(200),
-            'low_or_below': ta_columns.below_dma_name(200),
-            'low_or_below_pct': ta_columns.below_dma_pct_name(200)
-        }
-        breadth = MarketInternals().breadth(tickers,200,'2010-01-01', '2017-01-01', columns, MarketInternals.dma)
+        breadth = MarketInternals().breadth(tickers,200,'2010-01-01', '2017-01-01', MarketInternals.dma)
         assert 3 == breadth.loc['20161223'][ta_columns.above_dma_name(200)]
         assert 0 == breadth.loc['20161223'][ta_columns.below_dma_name(200)]
 

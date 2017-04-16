@@ -63,14 +63,8 @@ def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, titl
 def dma_analysis(kwargs, df_list, plot_vs):
     lookback = kwargs['lookback']
     internals = MarketInternals()
-
-    #TODO: Only defined in one place!
-    columns = {
-        'high_or_above': ta_columns.above_dma_name(lookback),
-        'high_or_above_pct': ta_columns.above_dma_pct_name(lookback),
-        'low_or_below': ta_columns.below_dma_name(lookback),
-        'low_or_below_pct': ta_columns.below_dma_pct_name(lookback)
-    }
+    fun = MarketInternals.dma
+    column_mappings = ta_columns.pos_neg_columns_mapping(lookback, fun.__name__)
 
     t0 = datetime.datetime.now()
     df_with_ta = [ta.add_ma(df, lookback) for df in df_list]
@@ -78,17 +72,17 @@ def dma_analysis(kwargs, df_list, plot_vs):
 
     click.echo("Running market breadth function '{0}'".format(kwargs['function']))
     t0 = datetime.datetime.now()
-    res = internals.breadth(df_with_ta, int(lookback), kwargs['start'], kwargs['end'], columns, MarketInternals.dma)
+    res = internals.breadth(df_with_ta, int(lookback), kwargs['start'], kwargs['end'], fun)
     logger.info("Function '{0}' completed in {1}".format(kwargs['function'],datetime.datetime.now()-t0))
 
     if kwargs['plot_vs']:
         plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close': kwargs['plot_vs']}) # Prepare compare dataframe
-        plot_data = res[[columns['low_or_below_pct'], columns['high_or_above_pct']]] # Select above/below percentage columns
+        plot_data = res[[column_mappings['neg_pct'], column_mappings['pos_pct']]] # Select above/below percentage columns
         plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
         df = pd.concat([plot_vs, plot_data], axis=1, join='inner') # join percentage values on valid trading days for compare
 
         plot_title = "% of Stocks above/below {0}DMA".format(lookback)
-        do_plot(df, kwargs['plot_vs'], columns['low_or_below_pct'], columns['high_or_above_pct'], lookback, kwargs['plot_pct_levels'], plot_title)
+        do_plot(df, kwargs['plot_vs'], column_mappings['neg_pct'], column_mappings['pos_pct'], lookback, kwargs['plot_pct_levels'], plot_title)
     else:
         click.echo(res)
 
@@ -96,27 +90,22 @@ def dma_analysis(kwargs, df_list, plot_vs):
 def hilo_analysis(kwargs, df_list, plot_vs):
     internals = MarketInternals()
     lookback = kwargs['lookback']
-    columns = {
-        'high_or_above':ta_columns.day_high_name(lookback),
-        'high_or_above_pct': ta_columns.day_high_pct_name(lookback),
-        'low_or_below': ta_columns.day_low_name(lookback),
-        'low_or_below_pct': ta_columns.day_low_pct_name(lookback)
-    }
+    fun = MarketInternals.hilo
+    column_mapping = ta_columns.pos_neg_columns_mapping(lookback, fun.__name__)
 
     click.echo("Running market breadth function '{0}'".format(kwargs['function']))
     t0 = datetime.datetime.now()
-    res = internals.breadth(df_list, int(lookback), kwargs['start'], kwargs['end'], columns, MarketInternals.hilo)
+    res = internals.breadth(df_list, int(lookback), kwargs['start'], kwargs['end'], fun)
     logger.info("Function '{0}' completed in {1}".format(kwargs['function'],datetime.datetime.now()-t0))
 
     if kwargs['plot_vs']:
         plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close':kwargs['plot_vs']})
-
-        plot_data = res[[columns['low_or_below_pct'], columns['high_or_above_pct']]]
+        plot_data = res[[column_mapping['neg_pct'], column_mapping['pos_pct']]]
         plot_data = plot_data[(plot_data > 0)] # Skip all zero data points
         df = pd.concat([plot_vs,plot_data],axis=1, join='inner')
 
         plot_title = "% of Stocks Making New {0} Day Highs/Lows".format(lookback)
-        do_plot(df, kwargs['plot_vs'], columns['low_or_below_pct'], columns['high_or_above_pct'], lookback, kwargs['plot_pct_levels'], plot_title)
+        do_plot(df, kwargs['plot_vs'], column_mapping['neg_pct'], column_mapping['pos_pct'], lookback, kwargs['plot_pct_levels'], plot_title)
 
     else:
         click.echo(res[-lookback:])
@@ -125,7 +114,7 @@ def hilo_analysis(kwargs, df_list, plot_vs):
 @click.command(options_metavar='<options>')
 @click.argument('function', metavar="<function>", type=click.STRING)
 @click.argument('lookback', metavar="<lookback>", type=click.INT)
-@click.option('--start', default="2010-01-01", help='starting date.')
+@click.option('--start', required=True, default="2010-01-01", help='starting date.')
 @click.option('--end', default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file',type=click.Path(exists=True), help="Read tickers from file")

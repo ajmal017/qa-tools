@@ -23,5 +23,14 @@
 #### TODO: market_breadth_analysis.py:
 * Extend plot into future to better visualize most recent hilo value
 
+#### TODO:
+* in-sample returns vs out of sample returns:
+    * scatter plot and regress is vs oos
+    
+#### TODO: spp
+* http://www.statistrade.com/support-files/spp_wagner_award_2014_dave_walton.pdf
+* system parameter permutation
+* http://bettersystemtrader.com/system-parameter-permutation-a-better-alternative/
 
 ### PROPRIETARY
+* Really need TA-Lib??

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8; py-indent-offset:4 -*-
+
 import unittest
 
 from dataprovider.dataprovider import CachedDataProvider
@@ -7,7 +10,7 @@ from technical_analysis.column_names import *
 
 class TestTechnicalAnalysis(unittest.TestCase):
 
-    local_provider = CachedDataProvider(cache_name='test_ta', expire_days=0)
+    local_provider = CachedDataProvider(cache_name='tests', expire_days=0)
 
     def test_ma_slope(self):
         spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2017-01-01')

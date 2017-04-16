@@ -5,14 +5,22 @@ Analyze and plot market breadth, seasonality, strategy/portfolio analysis, etc.
 ## Python requirements 
 * python3
 * setuptools
-* pip
+* pip3
 * virtualenv
 * pandas, matplotlib, pyts, etc. (from requirements.txt)
 * wrapper for pandas-datareader (https://github.com/fbjarkes/dataprovider.git)
+* TA-Lib (http://ta-lib.org/)
+    * Download sources and install:   
+        ```
+        $ ./configure --prefix=/usr 
+        $ make
+        $ sudo make install
+        ```
+  
 
 ## Installation
 ### Install tools and required libraries
-1. Init virtual environment:
+1. Init virtual environment (optional):
 ```
 $ virtualenv .
 $ source bin/activate
@@ -20,17 +28,23 @@ $ source bin/activate
 2. Install the dataprovider-library from git: 
 ```
 $ git clone https://github.com/fbjarkes/dataprovider.git
-$ pip install -r dataprovider/requirements.txt
-$ cd dataprovider && python setup.py install && cd ..
+$ pip3 install -r dataprovider/requirements.txt
+$ cd dataprovider && ./setup.py install
 ```
 3. Clone repository:
 ```
 $ git clone https://github.com/fbjarkes/qa_tools.git
-$ pip install -r qa_tools/requirements.txt
+$ pip3 install -r qa_tools/requirements.txt
 ```
 4. Possibly needed before invoking scripts in qa_tools:
 ```
 $ export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+```
+
+## Tests
+Run all unittests:
+```
+$ python3 -m unittest discover -s tests
 ```
 
 ## Market breadth analysis

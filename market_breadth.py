@@ -64,6 +64,7 @@ def dma_analysis(kwargs, df_list, plot_vs):
     lookback = kwargs['lookback']
     internals = MarketInternals()
 
+    #TODO: Only defined in one place!
     columns = {
         'high_or_above': ta_columns.above_dma_name(lookback),
         'high_or_above_pct': ta_columns.above_dma_pct_name(lookback),

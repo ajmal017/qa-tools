@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8; py-indent-offset:4 -*-
+
 import unittest
 
 from dataprovider.dataprovider import CachedDataProvider
@@ -5,7 +8,7 @@ from technical_analysis.weekly_tight_range import WeeklyTightRange
 
 
 class TestWeeklyTightRange(unittest.TestCase):
-    local_provider = CachedDataProvider(cache_name='test_weekly_tight_range', expire_days=0, trading_days=True)
+    local_provider = CachedDataProvider(cache_name='tests', expire_days=0, trading_days=True)
 
     def test_previous_week_is_tight_range(self):
         aapl_daily = self.local_provider.get_data(ticker="aapl", from_date='2011-08-01', to_date='2016-01-01',

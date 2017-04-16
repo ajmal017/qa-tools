@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+
 import concurrent.futures
 from datetime import datetime
 import logging as logger
@@ -6,13 +9,12 @@ import pandas as pd
 from technical_analysis import ta
 import technical_analysis.column_names as ta_names
 
-#TODO: set logger level using parameter
+# TODO: set logger level using parameter
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 class MarketInternals:
-
-    def breadth(self, df_list, lookback, from_date, to_date, columns, fun):
+    def breadth(self, df_list, lookback, from_date, to_date, fun):
         """ Calculate breadth using function for all tickers in df_list"""
         results = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -29,8 +31,10 @@ class MarketInternals:
 
         logger.info("Processing results")
         t0 = datetime.now()
-        res = MarketInternals.process_results(results, from_date, to_date, columns)
-        logger.info("Done in {0}".format(datetime.now()-t0))
+
+        res = MarketInternals.process_results(results, from_date, to_date,
+                                              ta_names.pos_neg_columns_mapping(lookback, fun.__name__))
+        logger.info("Done in {0}".format((datetime.now() - t0).total_seconds()))
         return res
 
     @staticmethod
@@ -53,32 +57,32 @@ class MarketInternals:
         start = datetime.strptime(from_date, "%Y-%m-%d")
         end = datetime.strptime(to_date, "%Y-%m-%d")
 
-        index = pd.date_range(start, end) # make series from actual trading days?
-        cols = [columns['high_or_above'],columns['high_or_above_pct'],columns['low_or_below'],columns['low_or_below_pct']]
+        index = pd.date_range(start, end)  # make series from actual trading days?
+        cols = [columns['pos'], columns['pos_pct'], columns['neg'], columns['neg_pct']]
         sum = pd.DataFrame(index=index, columns=cols).fillna(0.0)
 
         for key, value in results.items():
-            for high_date in value['high_or_above']:
-                sum.set_value(high_date, columns['high_or_above'], sum.get_value(high_date, columns['high_or_above']) + 1)
+            for high_date in value['pos']:
+                sum.set_value(high_date, columns['pos'], sum.get_value(high_date, columns['pos']) + 1)
 
-                perc = float(sum.get_value(high_date, columns['high_or_above'])) / float((len(results)))
-                sum.set_value(high_date, columns['high_or_above_pct'], perc * 100.0)
+                perc = float(sum.get_value(high_date, columns['pos'])) / float((len(results)))
+                sum.set_value(high_date, columns['pos_pct'], perc * 100.0)
 
-            for low_date in value['low_or_below']:
-                sum.set_value(low_date, columns['low_or_below'], sum.get_value(low_date, columns['low_or_below']) + 1)
+            for low_date in value['neg']:
+                sum.set_value(low_date, columns['neg'], sum.get_value(low_date, columns['neg']) + 1)
 
-                perc = float(sum.get_value(low_date, columns['low_or_below'])) / float(len(results))
-                sum.set_value(low_date, columns['low_or_below_pct'], perc * 100.0)
+                perc = float(sum.get_value(low_date, columns['neg'])) / float(len(results))
+                sum.set_value(low_date, columns['neg_pct'], perc * 100.0)
 
         return sum
 
-    #TODO: cache method?
+    # TODO: cache method?
     @staticmethod
     def hilo(df, lookback):
         ticker = df['Ticker'][0]
         highs = []
         lows = []
-        results = {'high_or_above': highs, 'low_or_below': lows}
+        results = {'pos': highs, 'neg': lows}
 
         t0 = datetime.now()
         for index, row in df.iterrows():
@@ -87,7 +91,7 @@ class MarketInternals:
             if ta.lowest(df[:index]['Close']) >= lookback:
                 lows.append(row.name)
 
-        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0).total_seconds()))
         return results
 
     # TODO: cache method?
@@ -97,7 +101,7 @@ class MarketInternals:
 
         above = []
         below = []
-        results = {'high_or_above': above, 'low_or_below': below}
+        results = {'pos': above, 'neg': below}
 
         t0 = datetime.now()
         for index, row in df.iterrows():
@@ -105,6 +109,5 @@ class MarketInternals:
                 below.append(row.name)
             else:
                 above.append(row.name)
-        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0))) #TODO: logger.debug not working?
+        logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0).total_seconds()))
         return results
-

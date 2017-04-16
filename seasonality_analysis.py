@@ -1,24 +1,33 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
+
 import datetime
 import logging as logger
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+import matplotlib
+import matplotlib.dates as mdates
+from matplotlib.ticker import MultipleLocator
+
+try:
+    import tkinter  # should fail on AWS images with no GUI available
+    import matplotlib.pyplot as plt
+except:
+    matplotlib.use('Agg')
+
 import click
 import pandas as pd
-import matplotlib.dates as mdates
 
 from dataprovider.dataprovider import CachedDataProvider
 from technical_analysis import seasonality
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
+
 @click.command(options_metavar='<options>')
-@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'')
-@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'')
+@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'', required=True)
+@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'', required=True)
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
-@click.option('--provider',type=click.Choice(['yahoo', 'google']), default='google')
+@click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize in same plot, e.g. \'SPY\'')
 @click.option('--monthly', is_flag=True, help='Subplot seasonality per month')
 @click.option('--plot-label', type=click.Choice(['day', 'calendar']), default='calendar',
@@ -38,7 +47,7 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
             ax = fig.add_subplot(4, 3, i + 1)
             ax.plot(data)
             ax.set_title(data.columns[0])
-            #ax.set_xticks(data.index)
+            # ax.set_xticks(data.index)
             ax.set_yticks([])
 
         plt.tight_layout()
@@ -49,11 +58,11 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
 
         fig, ax = plt.subplots()
         if plot_label == 'calendar':
-            ax.plot(seasonlity_data, label="{0} {1}-{2}".format(ticker,df.index[0].year,df.index[-1].year))
-            #months = mdates.MonthLocator()  # every month
+            ax.plot(seasonlity_data, label="{0} {1}-{2}".format(ticker, df.index[0].year, df.index[-1].year))
+            # months = mdates.MonthLocator()  # every month
             yearsFmt = mdates.DateFormatter('%b')
             ax.xaxis.set_major_formatter(yearsFmt)
-            #ax.xaxis.set_minor_locator(months)
+            # ax.xaxis.set_minor_locator(months)
             days = mdates.DayLocator()
             ax.xaxis.set_minor_locator(days)
             fig.autofmt_xdate()
@@ -77,12 +86,12 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
                 title = "{0} Seasonality vs {0}".format(ticker)
 
         elif plot_label == 'day':
-            #days = range(1,len(plot_data)-1)
-            #plot_data_days = pd.DataFrame({ticker:plot_data[ticker].values}).reindex(days)
+            # days = range(1,len(plot_data)-1)
+            # plot_data_days = pd.DataFrame({ticker:plot_data[ticker].values}).reindex(days)
 
             seasonality_data_days = seasonality.trading_day_reindex(seasonlity_data, ticker, ticker)
             seasonality_data_days = seasonality.normalize(seasonality_data_days).apply(seasonality.rebase_days)
-            ax.plot(seasonality_data_days, label="{0} {1}-{2}".format(ticker,df.index[0].year,df.index[-1].year))
+            ax.plot(seasonality_data_days, label="{0} {1}-{2}".format(ticker, df.index[0].year, df.index[-1].year))
 
             minorLocator = MultipleLocator(1)
             ax.xaxis.set_minor_locator(minorLocator)
@@ -100,11 +109,11 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
                 ax.plot(df, label=col)
                 title = "{0} Seasonality vs {0}".format(ticker)
 
-
         legend = ax.legend(loc='upper left', shadow=False, fontsize=12)
         plt.title(title)
         plt.show()
 
+
 if __name__ == '__main__':
-    #seasonality_analysis("SPY","google","2000-01-01","2016-12-31","","day",True)
+    # seasonality_analysis("SPY","google","2000-01-01","2016-12-31","","day",True)
     seasonality_analysis()

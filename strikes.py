@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
 
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY

@@ -11,8 +11,8 @@ import ffn
 
 from dataprovider.dataprovider import CachedDataProvider
 
-
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
+
 
 def get_tickers(file):
     with open(file) as f:
@@ -23,9 +23,10 @@ def get_tickers(file):
 @click.option('--start', type=click.STRING, default="2010-01-01", help='starting date.', required=True)
 @click.option('--end', type=click.STRING, default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
-@click.option('--file',type=click.Path(exists=True), help="Read tickers from file")
-@click.option('--provider',type=click.Choice(['yahoo', 'google']), default='google')
-@click.option('--quotes', is_flag=True, help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
+@click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
+@click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
+@click.option('--quotes', is_flag=True,
+              help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
 def main(start, end, tickers, file, provider, quotes):
     """Simple tool (based on https://github.com/pmorissette/ffn) for inter market analysis."""
 
@@ -48,15 +49,16 @@ def main(start, end, tickers, file, provider, quotes):
 
     data_provider = CachedDataProvider(cache_name='intermarket', expire_days=0, quote=quotes)
     df_list = data_provider.get_data_parallel(tickers, from_date=start_date, to_date=end_date,
-                                         provider=provider, max_workers=10)
+                                              provider=provider, max_workers=10)
     closes = []
     for df in df_list:
         closes.append(df['Close'].rename(df['Ticker'][0]))
 
-    #g = ffn.GroupStats(df_list[0]['Close'], df_list[1]['Open'])
+    # TODO: plot rebased etc??
+    # g = ffn.GroupStats(df_list[0]['Close'], df_list[1]['Open'])
     g = ffn.GroupStats(*closes)
     g.plot_correlation()
-    #g.plot()
+    # g.plot()
 
     plt.show()
 

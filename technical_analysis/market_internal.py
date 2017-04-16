@@ -9,12 +9,11 @@ import pandas as pd
 from technical_analysis import ta
 import technical_analysis.column_names as ta_names
 
-#TODO: set logger level using parameter
+# TODO: set logger level using parameter
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 class MarketInternals:
-
     def breadth(self, df_list, lookback, from_date, to_date, fun):
         """ Calculate breadth using function for all tickers in df_list"""
         results = {}
@@ -33,8 +32,9 @@ class MarketInternals:
         logger.info("Processing results")
         t0 = datetime.now()
 
-        res = MarketInternals.process_results(results, from_date, to_date, ta_names.pos_neg_columns_mapping(lookback,fun.__name__))
-        logger.info("Done in {0}".format((datetime.now()-t0).total_seconds()))
+        res = MarketInternals.process_results(results, from_date, to_date,
+                                              ta_names.pos_neg_columns_mapping(lookback, fun.__name__))
+        logger.info("Done in {0}".format((datetime.now() - t0).total_seconds()))
         return res
 
     @staticmethod
@@ -57,8 +57,8 @@ class MarketInternals:
         start = datetime.strptime(from_date, "%Y-%m-%d")
         end = datetime.strptime(to_date, "%Y-%m-%d")
 
-        index = pd.date_range(start, end) # make series from actual trading days?
-        cols = [columns['pos'],columns['pos_pct'],columns['neg'],columns['neg_pct']]
+        index = pd.date_range(start, end)  # make series from actual trading days?
+        cols = [columns['pos'], columns['pos_pct'], columns['neg'], columns['neg_pct']]
         sum = pd.DataFrame(index=index, columns=cols).fillna(0.0)
 
         for key, value in results.items():
@@ -76,7 +76,7 @@ class MarketInternals:
 
         return sum
 
-    #TODO: cache method?
+    # TODO: cache method?
     @staticmethod
     def hilo(df, lookback):
         ticker = df['Ticker'][0]
@@ -111,4 +111,3 @@ class MarketInternals:
                 above.append(row.name)
         logger.info("{0} done in {1}".format(ticker, (datetime.now() - t0).total_seconds()))
         return results
-

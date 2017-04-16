@@ -23,6 +23,9 @@
 #### TODO: market_breadth_analysis.py:
 * Extend plot into future to better visualize most recent hilo value
 
+#### TODO: intermarket_analysis.py:
+* WIP
+
 #### TODO:
 * in-sample returns vs out of sample returns:
     * scatter plot and regress is vs oos

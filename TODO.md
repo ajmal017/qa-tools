@@ -1,5 +1,8 @@
 ### PUBLIC
 
+#### TODO: seasonality_analysis.py:
+* Accept file with tickers and save figure with plot-vs for each ticker
+
 #### TODO: technical_analysis/market_internal.py
 * use ffn.utils.memoize for all intensive functions
 * https://github.com/shaypal5/cachier
@@ -13,6 +16,7 @@
 
 #### TODO: monter_carlo_analysis.py:
 * Use bootstrap https://github.com/facebookincubator/bootstrapped with all equity curves to estimate with 95%
+* Add median performance as well as average performance
 * Estimate the mean performance using bootstrap vs. just taking the mean of performances
 
 #### TODO: technical_analysis/ehlers.py
@@ -29,11 +33,13 @@
 #### TODO:
 * in-sample returns vs out of sample returns:
     * scatter plot and regress is vs oos
-    
+   
+#### TODO:
+* ipynb in examples folder instead of examples in readme.md (http://nbviewer.jupyter.org/github/bpsmith/tia/blob/master/examples/backtest.ipynb)
+  
+   
 #### TODO: spp
 * http://www.statistrade.com/support-files/spp_wagner_award_2014_dave_walton.pdf
 * system parameter permutation
 * http://bettersystemtrader.com/system-parameter-permutation-a-better-alternative/
 
-### PROPRIETARY
-* Really need TA-Lib??

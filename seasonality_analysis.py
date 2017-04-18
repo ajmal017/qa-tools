@@ -17,7 +17,7 @@ except:
 import click
 import pandas as pd
 
-from dataprovider.dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedDataProvider
 from technical_analysis import seasonality
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')

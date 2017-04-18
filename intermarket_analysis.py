@@ -9,17 +9,15 @@ import click
 import pandas as pd
 import ffn
 
-from dataprovider.dataprovider import CachedDataProvider
+
+from qa_dataprovider.web_dataprovider import CachedDataProvider
+from utils import argutils
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
-def get_tickers(file):
-    with open(file) as f:
-        return [ticker.rstrip() for ticker in f.readlines()]
-
-
 @click.command()
+@click.argument('function', metavar="<function>", type=click.STRING)
 @click.option('--start', type=click.STRING, default="2010-01-01", help='starting date.', required=True)
 @click.option('--end', type=click.STRING, default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
@@ -27,40 +25,61 @@ def get_tickers(file):
 @click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--quotes', is_flag=True,
               help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
-def main(start, end, tickers, file, provider, quotes):
-    """Simple tool (based on https://github.com/pmorissette/ffn) for inter market analysis."""
+def main(function, start, end, tickers, file, provider, quotes):
+    """Simple tool (based on https://github.com/pmorissette/ffn) for inter market analysis.
 
-    if end is 'today':
-        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
-    else:
-        end_date = datetime.datetime.strptime(end, '%Y-%m-%d').strftime('%Y-%m-%d')
+    <function>: Available analysis methods:
 
-    start_date = datetime.datetime.strptime(start, '%Y-%m-%d').strftime('%Y-%m-%d')
+    'heat': display correlations heatmap
 
-    if file:
-        tickers = get_tickers(file)
-    else:
-        if not tickers:
-            raise Exception("Must provide list of tickers or tickers file")
-        else:
-            tickers = tickers.split(",")
+    'scatter': display scatter matrix
+
+    """
+
+    start_date, end_date = argutils.parse_dates(start, end)
+    tickers = argutils.tickers_list(file, tickers)
 
     click.echo("Fetching data for {0} tickers".format(len(tickers)))
 
     data_provider = CachedDataProvider(cache_name='intermarket', expire_days=0, quote=quotes)
     df_list = data_provider.get_data_parallel(tickers, from_date=start_date, to_date=end_date,
                                               provider=provider, max_workers=10)
+
+
     closes = []
     for df in df_list:
         closes.append(df['Close'].rename(df['Ticker'][0]))
 
-    # TODO: plot rebased etc??
-    # g = ffn.GroupStats(df_list[0]['Close'], df_list[1]['Open'])
-    g = ffn.GroupStats(*closes)
-    g.plot_correlation()
-    # g.plot()
+    #for c in closes:
+    #    for index, item in c.iteritems():
+    #        print(index,item)
 
-    plt.show()
+    # TODO: plot rebased etc??
+    if function == 'heat':
+        # g = ffn.GroupStats(df_list[0]['Close'], df_list[1]['Open'])
+        g = ffn.GroupStats(*closes)
+        g.plot_correlation()
+        # g.plot()
+        plt.show()
+
+    elif function == 'scatter':
+        g = ffn.GroupStats(*closes)
+
+        #df.corr()
+        #corr = df['Close'].corr().as_matrix()
+        axes = g.plot_scatter_matrix()
+        #for i, j in zip(*plt.np.triu_indices_from(axes, k=1)):
+        #    axes[i, j].annotate("%.3f" % corr[i, j], (0.8, 0.8), xycoords='axes fraction', ha='center', va='center')
+        plt.show()
+
+    elif function == 'plot':
+        g = ffn.GroupStats(*closes)
+
+        g.plot()
+        plt.show()
+
+    else:
+        click.echo("{:s} not recognized".format(function))
 
     if data_provider.errors > 0:
         logger.warning("Missing data for {0} tickers.".format(provider.errors))

@@ -87,7 +87,7 @@ def __normalized_per_month(df):
         groups_years = df_month.groupby(df_month.index.year)
 
         min_days = 1000
-        slices = {}  # Will contain one month, normalzied, stored per year
+        slices = {}  # Will contain one month, normalized, stored per year
         for group_years in groups_years:
             closes = group_years[1]['Close']  # Closes for one month, one year
             slices[group_years[0]] = trading_day_reindex(normalize(pd.DataFrame(closes)), group_years[0], 'Close')

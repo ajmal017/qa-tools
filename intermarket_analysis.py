@@ -9,16 +9,17 @@ import click
 import pandas as pd
 import ffn
 
-
 from qa_dataprovider.web_dataprovider import CachedDataProvider
 from utils import argutils
+from technical_analysis import ta
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 @click.command()
 @click.argument('function', metavar="<function>", type=click.STRING)
-@click.option('--start', type=click.STRING, default="2010-01-01", help='starting date.', required=True)
+@click.option('--start', type=click.STRING, default="2010-01-01", help='starting date.',
+              required=True)
 @click.option('--end', type=click.STRING, default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
@@ -26,9 +27,11 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 @click.option('--quotes', is_flag=True,
               help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
 def main(function, start, end, tickers, file, provider, quotes):
-    """Simple tool (based on https://github.com/pmorissette/ffn) for inter market analysis.
+    """Simple tool (based on https://github.com/pmorissette/ffn) for intermarket analysis.
 
     <function>: Available analysis methods:
+    
+    'average': display average combined returns
 
     'heat': display correlations heatmap
 
@@ -45,37 +48,34 @@ def main(function, start, end, tickers, file, provider, quotes):
     df_list = data_provider.get_data_parallel(tickers, from_date=start_date, to_date=end_date,
                                               provider=provider, max_workers=10)
 
-
     closes = []
     for df in df_list:
         closes.append(df['Close'].rename(df['Ticker'][0]))
 
-    #for c in closes:
-    #    for index, item in c.iteritems():
-    #        print(index,item)
-
-    # TODO: plot rebased etc??
     if function == 'heat':
-        # g = ffn.GroupStats(df_list[0]['Close'], df_list[1]['Open'])
         g = ffn.GroupStats(*closes)
         g.plot_correlation()
-        # g.plot()
         plt.show()
 
     elif function == 'scatter':
         g = ffn.GroupStats(*closes)
-
-        #df.corr()
-        #corr = df['Close'].corr().as_matrix()
         axes = g.plot_scatter_matrix()
-        #for i, j in zip(*plt.np.triu_indices_from(axes, k=1)):
-        #    axes[i, j].annotate("%.3f" % corr[i, j], (0.8, 0.8), xycoords='axes fraction', ha='center', va='center')
         plt.show()
 
-    elif function == 'plot':
-        g = ffn.GroupStats(*closes)
+    elif function == 'average':
 
-        g.plot()
+        col = "Close"
+        tickers = "Average: " + ", ".join([df['Ticker'][0] for df in df_list])
+        rebased_merged = ffn.core.merge(*[ffn.core.rebase(c) for c in closes])
+
+        average = pd.DataFrame(columns=[col])
+        for index, row in rebased_merged.iterrows():
+            average.set_value(index, col, row.values.mean())
+
+        average = ta.add_ma(average, 200)
+
+        average.plot()
+        plt.title(tickers)
         plt.show()
 
     else:

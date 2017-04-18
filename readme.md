@@ -191,10 +191,34 @@ Options:
 
 ## Intermarket analysis
 ```
+Usage: intermarket_analysis.py [OPTIONS] <function>
+
+  Simple tool (based on https://github.com/pmorissette/ffn) for intermarket
+  analysis.
+
+  <function>: Available analysis methods:
+
+  'average': display average combined returns
+
+  'heat': display correlations heatmap
+
+  'scatter': display scatter matrix
+
+Options:
+  --start TEXT               starting date.  [required]
+  --end TEXT                 ending date
+  --tickers TEXT             Comma separated list of tickers
+  --file PATH                Read tickers from file
+  --provider [yahoo|google]
+  --quotes                   Add intraday (possibly delayed) quotes, e.g. for
+                             analyzing during market opening hours
+  --help                     Show this message and exit.
+
 ```
 
 ##### Examples
-1. TODO: Combine Telecom companies (TEL2-B, TELIA,...)
+1. Plot correlations and average between stocks:
     ```
-    $ ./intermarket_analysis.py --tickers TEL2-B.ST, TELIA.ST --start 2005-01-01 --ta DMA --ta-param 200
+    $ ./intermarket_analysis.py average --start 2012-01-01 --provider yahoo --tickers BALD-B.ST,CAST.ST,FABG.ST,HUFV-A.ST,WALL-B.ST,WIHL.ST,KLED.ST
     ```
+    ![% MC](images/intermarket_average.png)

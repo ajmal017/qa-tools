@@ -3,7 +3,7 @@
 
 import unittest
 
-from dataprovider.dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedDataProvider
 from technical_analysis.weekly_tight_range import WeeklyTightRange
 
 

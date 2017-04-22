@@ -82,11 +82,18 @@ class MonteCarloTest:
         else:
             risk_type = "% of Cap."
 
-        click.echo("Running {0} simulations with {1}% risk ({2}) of {3} starting equity.".format(sim_count,
-                                                                                                 round(risk * 100, 2),
-                                                                                                 risk_type, equity))
+        if risk <= 0:
+            click.echo("Cannot simulate with negative {:s} risk={:.1f}%"
+                       .format(risk_type, round(risk * 100, 2)))
+            click.echo("P_win={:.2f}, Avg.Profit={:.1f}, Avg.Loss={:.1f}".format(p_high, profit,
+                                                                                 loss))
+            return
+
+        click.echo("Running {0} simulations with {1}% risk ({2}) of {3} starting equity.".
+                   format(sim_count, round(risk * 100, 2), risk_type, equity))
+
         if dynamic_size:
-            click.echo("Adding profits/losses cumulatiely to equity")
+            click.echo("Adding profits/losses cumulatively to equity")
 
         trade_simulations = []
 

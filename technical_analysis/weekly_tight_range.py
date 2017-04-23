@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from technical_analysis.column_names import rocp_name
-from dataprovider.dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedDataProvider
 from technical_analysis import ta
 
 """

@@ -16,21 +16,23 @@ except:
 
 from technical_analysis import ta
 import technical_analysis.column_names as ta_columns
-from dataprovider.dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedDataProvider
 from technical_analysis.market_internal import MarketInternals
+from utils import argutils
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
-def get_tickers(file):
-    with open(file) as f:
-        return [ticker.rstrip() for ticker in f.readlines()]
-
-
-def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, title):
+def do_plot(df, ticker, lower_column, higher_column, pct_levels, title):
     """
-    ticker: datatframe column to plot with regular line style
-    lower_column/higher_columns: dataframe columns to mark in plot where data point is > threshold
+    Plot data
+    
+    :param (pd.DataFrame) df: dataframe to plot 
+    :param (str) ticker: the ticker to plot versus with regular line style
+    :param (str) lower_column: columns in df to mark where data point < pct_levels
+    :param (str) higher_column: columns in df to mark where data point > pct_levels 
+    :param (list) pct_levels: the percent levels to use as threshold for plot
+    :param (str) title: plot title 
     """
 
     lows = []
@@ -49,12 +51,12 @@ def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, titl
     ax1.plot(df[[ticker]].index, df[[ticker]], 'b-', label=ticker)
 
     for i, item in enumerate(lows):
-        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% {1}".format(pct_levels[i], lower_column),
-                 markersize=(4 + (i * 2)))
+        ax1.plot(item.index, item[[ticker]], 'r.', label=">{0}{1}".
+                 format(pct_levels[i], lower_column), markersize=(4 + (i * 2)))
 
     for i, item in enumerate(highs):
-        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% {1}".format(pct_levels[i], higher_column),
-                 markersize=(4 + (i * 2)))
+        ax1.plot(item.index, item[[ticker]], 'g.', label=">{0}{1}".
+                 format(pct_levels[i], higher_column), markersize=(4 + (i * 2)))
 
     legend = ax1.legend(loc='upper left', shadow=False, fontsize=8)
     # legend.get_frame().set_facecolor('#00FFCC')
@@ -62,57 +64,81 @@ def do_plot(df, ticker, lower_column, higher_column, threshold, pct_levels, titl
     plt.show()
 
 
-def dma_analysis(kwargs, df_list, plot_vs):
-    lookback = kwargs['lookback']
+def dma_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels):
+    """
+    Stocks above/below DMA levels
+    
+    :param str lookback: lookback period
+    :param str start_date: e.g. '2016-01-01'
+    :param str end_date: e.g. '2017-01-01'
+    :param list df_list: a list of dataframes  
+    :param pd.DataFrame plot_vs_df: data with to compare in plot 
+    :param list plot_pct_levels: list with percent levels, e.g. ['20,'30']    
+    :return: 
+    """
+
     internals = MarketInternals()
     fun = MarketInternals.dma
     column_mappings = ta_columns.pos_neg_columns_mapping(lookback, fun.__name__)
-
-    t0 = datetime.datetime.now()
     df_with_ta = [ta.add_ma(df, lookback) for df in df_list]
-    logger.info("TA for dataframes done: {0}".format(datetime.datetime.now() - t0))
 
-    click.echo("Running market breadth function '{0}'".format(kwargs['function']))
+    click.echo("Running market breadth function 'dma'")
     t0 = datetime.datetime.now()
-    res = internals.breadth(df_with_ta, int(lookback), kwargs['start'], kwargs['end'], fun)
-    logger.info("Function '{0}' completed in {1}".format(kwargs['function'], datetime.datetime.now() - t0))
+    res = internals.breadth(df_with_ta, int(lookback), start_date, end_date, fun)
+    logger.info("Function 'dma' completed in {}".format(datetime.datetime.now() - t0))
 
-    if kwargs['plot_vs']:
-        plot_vs = pd.DataFrame(plot_vs['Close']).rename(
-            columns={'Close': kwargs['plot_vs']})  # Prepare compare dataframe
-        plot_data = res[
-            [column_mappings['neg_pct'], column_mappings['pos_pct']]]  # Select above/below percentage columns
-        plot_data = plot_data[(plot_data > 0)]  # Skip all zero data points
-        df = pd.concat([plot_vs, plot_data], axis=1,
-                       join='inner')  # join percentage values on valid trading days for compare
+    if plot_vs_df is not None:
+        plot_vs = plot_vs_df['Ticker'][0]
 
-        plot_title = "% of Stocks above/below {0}DMA".format(lookback)
-        do_plot(df, kwargs['plot_vs'], column_mappings['neg_pct'], column_mappings['pos_pct'], lookback,
-                kwargs['plot_pct_levels'], plot_title)
+        # Prepare compare dataframe
+        plot_vs_df = pd.DataFrame(plot_vs_df['Close']).rename(columns={'Close': plot_vs})
+
+        # Select above/below percentage columns
+        plot_data = res[[column_mappings['neg_pct'], column_mappings['pos_pct']]]
+
+        # Skip all zero data points
+        plot_data = plot_data[(plot_data > 0)]
+
+        # join percentage values on valid trading days for compare
+        df = pd.concat([plot_vs_df, plot_data], axis=1,join='inner')
+
+        plot_title = "% of stocks above/below {0}-DMA".format(lookback)
+        do_plot(df, plot_vs, column_mappings['neg_pct'], column_mappings['pos_pct'],
+                plot_pct_levels, plot_title)
     else:
         click.echo(res)
 
 
-def hilo_analysis(kwargs, df_list, plot_vs):
+def hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels):
+    """
+    New highs and lows analysis
+    
+    :param str lookback: lookback period
+    :param str start_date: e.g. '2016-01-01'
+    :param str end_date: e.g. '2017-01-01'
+    :param list df_list: a list of dataframes  
+    :param pd.DataFrame plot_vs_df: data with to compare in plot 
+    :param list plot_pct_levels: list with percent levels, e.g. ['20,'30']      
+    """
     internals = MarketInternals()
-    lookback = kwargs['lookback']
     fun = MarketInternals.hilo
     column_mapping = ta_columns.pos_neg_columns_mapping(lookback, fun.__name__)
 
-    click.echo("Running market breadth function '{0}'".format(kwargs['function']))
+    click.echo("Running market breadth function 'hilo")
     t0 = datetime.datetime.now()
-    res = internals.breadth(df_list, int(lookback), kwargs['start'], kwargs['end'], fun)
-    logger.info("Function '{0}' completed in {1}".format(kwargs['function'], datetime.datetime.now() - t0))
+    res = internals.breadth(df_list, int(lookback), start_date, end_date, fun)
+    logger.info("Function 'hilo' completed in {}".format(datetime.datetime.now() - t0))
 
-    if kwargs['plot_vs']:
-        plot_vs = pd.DataFrame(plot_vs['Close']).rename(columns={'Close': kwargs['plot_vs']})
+    if plot_vs_df is not None:
+        plot_vs = plot_vs_df['Ticker'][0]
+        plot_vs_df = pd.DataFrame(plot_vs_df['Close']).rename(columns={'Close': plot_vs})
         plot_data = res[[column_mapping['neg_pct'], column_mapping['pos_pct']]]
         plot_data = plot_data[(plot_data > 0)]  # Skip all zero data points
-        df = pd.concat([plot_vs, plot_data], axis=1, join='inner')
+        df = pd.concat([plot_vs_df, plot_data], axis=1, join='inner')
 
-        plot_title = "% of Stocks Making New {0} Day Highs/Lows".format(lookback)
-        do_plot(df, kwargs['plot_vs'], column_mapping['neg_pct'], column_mapping['pos_pct'], lookback,
-                kwargs['plot_pct_levels'], plot_title)
+        plot_title = "% of Stocks at {:d}-Day Highs/Lows".format(lookback)
+        do_plot(df, plot_vs, column_mapping['neg_pct'], column_mapping['pos_pct'],
+                plot_pct_levels, plot_title)
 
     else:
         click.echo(res[-lookback:])
@@ -129,7 +155,7 @@ def hilo_analysis(kwargs, df_list, plot_vs):
 @click.option('--quotes', is_flag=True,
               help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize breadth, e.g. \'SPY\'')
-@click.option('--plot-pct-levels', default='50,75,90', type=click.STRING,
+@click.option('--plot-pct-levels', default='20,30,40', type=click.STRING,
               help='Comma separated list, e.g. \'75,90\' to visulize when 75% and 90% of stocks making 20-Day highs/lows')
 def main(function, lookback, start, end, tickers, file, provider, quotes, plot_vs, plot_pct_levels):
     """
@@ -144,52 +170,28 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
     'dma': calculate all stocks below/above any moving average.
 
     """
-    if end is 'today':
-        end_datetime = datetime.datetime.now()
-    else:
-        end_datetime = datetime.datetime.strptime(end, '%Y-%m-%d')
 
-    start_datetime = datetime.datetime.strptime(start, '%Y-%m-%d')
+    start_date, end_date = argutils.parse_dates(start, end)
+    tickers_list  = argutils.tickers_list(file, tickers)
 
-    fun_kwargs = {
-        'function': function,
-        'lookback': lookback,
-        'start_dt': start_datetime,
-        'start': start_datetime.strftime('%Y-%m-%d'),
-        'end_dt': end_datetime,
-        'end': end_datetime.strftime('%Y-%m-%d'),
-        'provider': provider,
-        'quotes': (True if quotes else False),
-        'plot_vs': plot_vs,
-        'plot_pct_levels': plot_pct_levels.split(",")
-    }
+    click.echo("Fetching data for {:d} tickers".format(len(tickers_list)))
+    dataprovider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=quotes)
+    df_list = dataprovider.get_data_parallel(tickers_list, from_date=start_date,to_date=end_date,
+                                         provider=provider, max_workers=10)
 
-    if file:
-        fun_kwargs['tickers'] = get_tickers(file)
-    else:
-        if not tickers:
-            raise Exception("Must provide list of tickers or tickers file")
-        else:
-            fun_kwargs['tickers'] = tickers.split(",")
-
-    click.echo("Fetching data for {0} tickers".format(len(fun_kwargs['tickers'])))
-    provider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=fun_kwargs['quotes'])
-    df_list = provider.get_data_parallel(fun_kwargs['tickers'], from_date=fun_kwargs['start'],
-                                         to_date=fun_kwargs['end'],
-                                         provider=fun_kwargs['provider'], max_workers=10)
-
-    if fun_kwargs['plot_vs']:
-        plot_vs = provider.get_data(fun_kwargs['plot_vs'], from_date=fun_kwargs['start'], to_date=fun_kwargs['end'],
-                                    provider=fun_kwargs['provider'])
+    plot_vs_df = None
+    if plot_vs:
+        plot_vs_df = dataprovider.get_data(plot_vs, from_date=start_date, to_date=end_date,
+                                        provider=provider)
     if function == 'hilo':
-        hilo_analysis(fun_kwargs, df_list, plot_vs)
+        hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
 
     if function == 'dma':
         # Similar to SPXA50R http://stockcharts.com/h-sc/ui?s=$SPXA50R
-        dma_analysis(fun_kwargs, df_list, plot_vs)
+        dma_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
 
-    if provider.errors > 0:
-        logger.warning("Missing data for {0} tickers.".format(provider.errors))
+    if dataprovider.errors > 0:
+        logger.warning("Missing data for {:d} tickers.".format(provider.errors))
 
 
 if __name__ == '__main__':

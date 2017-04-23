@@ -3,7 +3,7 @@
 
 import unittest
 
-from dataprovider.dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedDataProvider
 
 from technical_analysis import ta
 import technical_analysis.column_names as ta_columns

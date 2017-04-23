@@ -15,11 +15,11 @@ def day_low_name(lookback):
 
 
 def day_high_pct_name(lookback):
-    return "DAY_HIGH_PCT_{0}".format(lookback)
+    return "% {:d}-day highs".format(lookback)
 
 
 def day_low_pct_name(lookback):
-    return "DAY_LOW_PCT_{0}".format(lookback)
+    return "% {:d}-day lows".format(lookback)
 
 
 def above_dma_name(lookback):
@@ -31,11 +31,11 @@ def below_dma_name(lookback):
 
 
 def above_dma_pct_name(lookback):
-    return "ABOVE_{0}DMA_PCT".format(lookback)
+    return "% above {:d}-DMA".format(lookback)
 
 
 def below_dma_pct_name(lookback):
-    return "BELOW_{0}DMA_PCT".format(lookback)
+    return "% below {:d}-DMA".format(lookback)
 
 
 def atr_name(lookback):

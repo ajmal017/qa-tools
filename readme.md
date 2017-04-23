@@ -81,9 +81,10 @@ Options:
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
     ```
-    $ ./market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider=yahoo --plot-vs=SPY --plot-pct-levels=30,40,50
+    $ ./market_breadth.py hilo 20 --start 2010-01-01 --file sp500.txt --provider yahoo 
+    --plot-vs SPY --plot-pct-levels 30,40,50
     ```
-    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo.png)
+    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_3.png)
     
     Note: this function could take approx. 20min to complete
 
@@ -91,16 +92,17 @@ Options:
 2. Above/below 200DMA breadth: 
     Plot market breadth with 'dma' function, i.e. all stocks below or above 200DMA:
     ```
-    $ ./market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider=google --plot-vs=SPY --plot-pct-levels=50,75,90
+    $ ./market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider google 
+    --plot-vs SPY --plot-pct-levels 50,75,90
     ```
-    ![% S&P500 stocks below/above 200DMA](images/sp500_200dma.png)
+    ![% S&P500 stocks below/above 200DMA](images/sp500_200dma_2.png)
 
 
 3. Current realtime (possibly delayed) 50-Day Highs/Lows:
     
     Note: start date of analysis should include more tradingdays than lookback period
     ```
-    $ ./market_breadth.py --start 2016-11-01 --file=sp500.txt hilo 50 --provider=google --quotes
+    $ ./market_breadth.py --start 2016-11-01 --file sp500.txt hilo 50 --provider google --quotes
                 DAY_HIGH_50  DAY_HIGH_PCT_50  DAY_LOW_50  DAY_LOW_PCT_50
     ...
     2017-02-01         42.0         8.624230        39.0        8.008214
@@ -145,7 +147,7 @@ Options:
     
 3. Plot seasonality per month:
     ```
-    $  ./seasonality.py --start 2005-01-01 --end 2015-12-31 --ticker SPY --monthly
+    $  ./seasonality_analysis.py --start 2005-01-01 --end 2015-12-31 --ticker SPY --monthly
     ```
     ![% Monthly seasonality](images/spy_seasonality_monthly.png)
         
@@ -187,12 +189,36 @@ Options:
     ![% MC](images/mc_1.png)
     
 
-## Combined Returns
+## Intermarket analysis
 ```
+Usage: intermarket_analysis.py [OPTIONS] <function>
+
+  Simple tool (based on https://github.com/pmorissette/ffn) for intermarket
+  analysis.
+
+  <function>: Available analysis methods:
+
+  'average': display average combined returns
+
+  'heat': display correlations heatmap
+
+  'scatter': display scatter matrix
+
+Options:
+  --start TEXT               starting date.  [required]
+  --end TEXT                 ending date
+  --tickers TEXT             Comma separated list of tickers
+  --file PATH                Read tickers from file
+  --provider [yahoo|google]
+  --quotes                   Add intraday (possibly delayed) quotes, e.g. for
+                             analyzing during market opening hours
+  --help                     Show this message and exit.
+
 ```
 
 ##### Examples
-1. TODO: Combine Telecom companies (TEL2-B, TELIA,...)
+1. Plot correlations and average between stocks:
     ```
-    $ ./combined_returns.py --tickers TEL2-B.ST, TELIA.ST --start 2005-01-01 --ta DMA --ta-param 200
+    $ ./intermarket_analysis.py average --start 2012-01-01 --provider yahoo --tickers BALD-B.ST,CAST.ST,FABG.ST,HUFV-A.ST,WALL-B.ST,WIHL.ST,KLED.ST
     ```
+    ![% MC](images/intermarket_average.png)

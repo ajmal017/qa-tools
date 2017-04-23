@@ -81,10 +81,10 @@ Options:
 1. 20-Day Highs/Lows breadth: 
     Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
     ```
-    $ ./market_breadth.py --start 2010-01-01 --file sp500.txt hilo 20 --provider yahoo 
+    $ ./market_breadth.py hilo 20 --start 2010-01-01 --file sp500.txt --provider yahoo 
     --plot-vs SPY --plot-pct-levels 30,40,50
     ```
-    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo.png)
+    ![% S&P500 stocks making new 20-Day Highs/Lows](images/sp500_20hilo_3.png)
     
     Note: this function could take approx. 20min to complete
 
@@ -95,7 +95,7 @@ Options:
     $ ./market_breadth.py --start 2005-01-01 --file sp500.txt dma 200 --provider google 
     --plot-vs SPY --plot-pct-levels 50,75,90
     ```
-    ![% S&P500 stocks below/above 200DMA](images/sp500_200dma.png)
+    ![% S&P500 stocks below/above 200DMA](images/sp500_200dma_2.png)
 
 
 3. Current realtime (possibly delayed) 50-Day Highs/Lows:

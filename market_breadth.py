@@ -35,11 +35,6 @@ def do_plot(df, ticker, lower_column, higher_column, pct_levels, title):
     :param (str) title: plot title 
     """
 
-    """
-    ticker: datatframe column to plot with regular line style
-    lower_column/higher_columns: dataframe columns to mark in plot where data point is > threshold
-    """
-
     lows = []
     highs = []
     for level in pct_levels:
@@ -56,12 +51,12 @@ def do_plot(df, ticker, lower_column, higher_column, pct_levels, title):
     ax1.plot(df[[ticker]].index, df[[ticker]], 'b-', label=ticker)
 
     for i, item in enumerate(lows):
-        ax1.plot(item.index, item[[ticker]], 'r.', label="{0}% {1}".format(pct_levels[i], lower_column),
-                 markersize=(4 + (i * 2)))
+        ax1.plot(item.index, item[[ticker]], 'r.', label=">{0}{1}".
+                 format(pct_levels[i], lower_column), markersize=(4 + (i * 2)))
 
     for i, item in enumerate(highs):
-        ax1.plot(item.index, item[[ticker]], 'g.', label="{0}% {1}".format(pct_levels[i], higher_column),
-                 markersize=(4 + (i * 2)))
+        ax1.plot(item.index, item[[ticker]], 'g.', label=">{0}{1}".
+                 format(pct_levels[i], higher_column), markersize=(4 + (i * 2)))
 
     legend = ax1.legend(loc='upper left', shadow=False, fontsize=8)
     # legend.get_frame().set_facecolor('#00FFCC')
@@ -107,7 +102,7 @@ def dma_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_l
         # join percentage values on valid trading days for compare
         df = pd.concat([plot_vs_df, plot_data], axis=1,join='inner')
 
-        plot_title = "% of Stocks above/below {0}DMA".format(lookback)
+        plot_title = "% of stocks above/below {0}-DMA".format(lookback)
         do_plot(df, plot_vs, column_mappings['neg_pct'], column_mappings['pos_pct'],
                 plot_pct_levels, plot_title)
     else:
@@ -141,7 +136,7 @@ def hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_
         plot_data = plot_data[(plot_data > 0)]  # Skip all zero data points
         df = pd.concat([plot_vs_df, plot_data], axis=1, join='inner')
 
-        plot_title = "% of Stocks Making New {:d} Day Highs/Lows".format(lookback)
+        plot_title = "% of Stocks at {:d}-Day Highs/Lows".format(lookback)
         do_plot(df, plot_vs, column_mapping['neg_pct'], column_mapping['pos_pct'],
                 plot_pct_levels, plot_title)
 
@@ -184,6 +179,7 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
     df_list = dataprovider.get_data_parallel(tickers_list, from_date=start_date,to_date=end_date,
                                          provider=provider, max_workers=10)
 
+    plot_vs_df = None
     if plot_vs:
         plot_vs_df = dataprovider.get_data(plot_vs, from_date=start_date, to_date=end_date,
                                         provider=provider)

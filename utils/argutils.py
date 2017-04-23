@@ -8,12 +8,14 @@ def get_tickers(file):
         return [ticker.rstrip() for ticker in f.readlines()]
 
 
+# TODO: move to qa_tools.utils
 def parse_dates(start, end):
     """
     Parse and verify dates and return as string
+
     :param start: String with date on standard format
     :param end: String with date on standard format or 'today' to generate correct string format
-    :return:
+    :return: Tuple with Strings, e.g. ('2016-12-10','2016-12-31')
     """
     if end is 'today':
         end_datetime = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -26,6 +28,13 @@ def parse_dates(start, end):
 
 
 def tickers_list(file, tickers):
+    """
+    Return a list of tickers from file or comma separated list
+    
+    :param file: 
+    :param tickers: 
+    :return: 
+    """
     if file:
         return get_tickers(file)
     else:

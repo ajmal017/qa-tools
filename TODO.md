@@ -17,7 +17,6 @@
 
 #### TODO: monter_carlo_analysis.py:
 * Use bootstrap https://github.com/facebookincubator/bootstrapped with all equity curves to estimate with 95%
-* Add median performance as well as average performance
 * Simulate trades by reshuffling order
 * Estimate the mean performance using bootstrap vs. just taking the mean of performances
 * Generate equity curves, i.e. 1000 performance values

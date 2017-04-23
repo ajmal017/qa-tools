@@ -1,5 +1,8 @@
 import datetime
 
+import click
+
+
 def get_tickers(file):
     with open(file) as f:
         return [ticker.rstrip() for ticker in f.readlines()]
@@ -30,3 +33,9 @@ def tickers_list(file, tickers):
             raise Exception("Must provide list of tickers or tickers file")
         else:
             return tickers.split(",")
+
+
+def float_range(ctx, param, value):
+    if 1.0 >= value >= 0.0:
+        return value
+    raise click.BadParameter('Risk: 0 <= 1')

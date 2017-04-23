@@ -165,9 +165,9 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
 
     <function>: Available analysis methods
 
-    'hilo': to calculate all stocks making new daily highs/lows.
+    'hilo': to calculate number of stocks at X-day highs/lows.
 
-    'dma': calculate all stocks below/above any moving average.
+    'dma': calculate number of stocks below/above any moving average.
 
     """
 

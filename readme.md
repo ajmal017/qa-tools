@@ -57,9 +57,9 @@ Usage: market_breadth.py <options> <function> <lookback>
 
   <function>: Available analysis methods
 
-  'hilo': to calculate all stocks making new daily highs/lows.
+  'hilo': to calculate number of stocks at X-day highs/lows.
 
-  'dma': calculate all stocks below/above any moving average.
+  'dma': calculate number of stocks below/above any moving average.
 
 Options:
   --start TEXT               starting date.
@@ -79,7 +79,7 @@ Options:
 ##### Examples:
 
 1. 20-Day Highs/Lows breadth: 
-    Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt making new 20-Day highs/lows:
+    Plot market breadth with 'hilo' function, i.e. all stocks in sp500.txt at 20-day highs/lows:
     ```
     $ ./market_breadth.py hilo 20 --start 2010-01-01 --file sp500.txt --provider yahoo 
     --plot-vs SPY --plot-pct-levels 30,40,50

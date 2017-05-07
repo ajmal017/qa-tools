@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+import sys
 import datetime
 import logging as logger
 
@@ -12,6 +13,8 @@ try:
     import tkinter  # should fail on AWS images with no GUI available
     import matplotlib.pyplot as plt
 except:
+    print("Warning: tkinter package not installed?", sys.exc_info()[0])
+    print(sys.exc_info()[1])
     matplotlib.use('Agg')
 
 import click

@@ -41,7 +41,7 @@ def tickers_list(file, tickers):
         if not tickers:
             raise Exception("Must provide list of tickers or tickers file")
         else:
-            return tickers.split(",")
+            return tickers.split(",") #TODO: strip spaces from each string token
 
 
 def float_range(ctx, param, value):

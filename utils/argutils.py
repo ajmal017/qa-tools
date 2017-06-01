@@ -17,14 +17,16 @@ def parse_dates(start, end):
     :param end: String with date on standard format or 'today' to generate correct string format
     :return: Tuple with Strings, e.g. ('2016-12-10','2016-12-31')
     """
-    if end is 'today':
+    if end == 'today':
         end_datetime = datetime.datetime.now().strftime('%Y-%m-%d')
     else:
         end_datetime = datetime.datetime.strptime(end, '%Y-%m-%d').strftime('%Y-%m-%d')
 
     start_datetime = datetime.datetime.strptime(start, '%Y-%m-%d').strftime('%Y-%m-%d')
 
-    return start_datetime, end_datetime
+    get_quotes = (end == 'today')
+
+    return start_datetime, end_datetime, get_quotes
 
 
 def tickers_list(file, tickers):

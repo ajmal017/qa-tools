@@ -170,13 +170,12 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
     'dma': calculate number of stocks below/above any moving average.
 
     """
-
-    start_date, end_date = argutils.parse_dates(start, end)
+    start_date, end_date, get_quotes = argutils.parse_dates(start, end)
     tickers_list  = argutils.tickers_list(file, tickers)
 
     click.echo("Fetching data for {:d} tickers".format(len(tickers_list)))
 
-    dataprovider = CachedWebDataProvider(provider, expire_days=0, quote=quotes)
+    dataprovider = CachedWebDataProvider(provider, expire_days=0, quotes=get_quotes)
     df_list = dataprovider.get_data(tickers_list, start_date, end_date, max_workers=10)
 
     plot_vs_df = None

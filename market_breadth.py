@@ -147,7 +147,7 @@ def hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_
 @click.command(options_metavar='<options>')
 @click.argument('function', metavar="<function>", type=click.STRING)
 @click.argument('lookback', metavar="<lookback>", type=click.INT)
-@click.option('--start', required=True, default="2010-01-01", help='starting date.')
+@click.option('--start', default="2010-01-01", help='starting date.')
 @click.option('--end', default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
@@ -175,6 +175,7 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
     tickers_list  = argutils.tickers_list(file, tickers)
 
     click.echo("Fetching data for {:d} tickers".format(len(tickers_list)))
+
     dataprovider = CachedWebDataProvider(provider, expire_days=0, quote=quotes)
     df_list = dataprovider.get_data(tickers_list, start_date, end_date, max_workers=10)
 

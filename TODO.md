@@ -41,7 +41,7 @@
 #### TODO:
 * in-sample returns vs out of sample returns:
     * scatter plot and regress is vs oos
-
+* docker container?
    
 #### TODO:
 * ipynb in examples folder instead of examples in readme.md (http://nbviewer.jupyter.org/github/bpsmith/tia/blob/master/examples/backtest.ipynb)

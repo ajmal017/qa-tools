@@ -4,7 +4,7 @@ click
 requests_cache
 pandas_datareader
 matplotlib
-dataprovider
+qa-dataprovider
 scipy
 ffn
 TA-lib

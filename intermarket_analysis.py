@@ -9,7 +9,7 @@ import click
 import pandas as pd
 import ffn
 
-from qa_dataprovider.web_dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from utils import argutils
 from technical_analysis import ta
 
@@ -44,9 +44,8 @@ def main(function, start, end, tickers, file, provider, quotes):
 
     click.echo("Fetching data for {0} tickers".format(len(tickers)))
 
-    data_provider = CachedDataProvider(cache_name='intermarket', expire_days=0, quote=quotes)
-    df_list = data_provider.get_data_parallel(tickers, from_date=start_date, to_date=end_date,
-                                              provider=provider, max_workers=10)
+    data_provider = CachedWebDataProvider(provider, expire_days=0, quote=quotes)
+    df_list = data_provider.get_data(tickers, start_date, end_date, max_workers=10)
 
     closes = []
     for df in df_list:

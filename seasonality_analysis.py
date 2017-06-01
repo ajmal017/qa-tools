@@ -20,15 +20,17 @@ except:
 import click
 import pandas as pd
 
-from qa_dataprovider.web_dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis import seasonality
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 @click.command(options_metavar='<options>')
-@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'', required=True)
-@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'', required=True)
+@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'',
+              default='2010-01-01')
+@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'',
+              default='2016-12-31')
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
 @click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize in same plot, e.g. \'SPY\'')
@@ -38,8 +40,8 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, monthly):
     click.echo("Seasonality for {0}".format(ticker))
 
-    data_provider = CachedDataProvider(cache_name='seasonality', expire_days=0)
-    df = data_provider.get_data(ticker, start, end, provider=provider)
+    data_provider = CachedWebDataProvider(provider, expire_days=0)
+    df = data_provider.get_data([ticker], start, end)[0]
 
     if monthly:
         rebased_dataframes = [df for df in seasonality.seasonality_monthly_returns(df)]

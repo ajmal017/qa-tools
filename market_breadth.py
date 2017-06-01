@@ -16,7 +16,7 @@ except:
 
 from technical_analysis import ta
 import technical_analysis.column_names as ta_columns
-from qa_dataprovider.web_dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis.market_internal import MarketInternals
 from utils import argutils
 
@@ -175,14 +175,12 @@ def main(function, lookback, start, end, tickers, file, provider, quotes, plot_v
     tickers_list  = argutils.tickers_list(file, tickers)
 
     click.echo("Fetching data for {:d} tickers".format(len(tickers_list)))
-    dataprovider = CachedDataProvider(cache_name='breadth', expire_days=0, quote=quotes)
-    df_list = dataprovider.get_data_parallel(tickers_list, from_date=start_date,to_date=end_date,
-                                         provider=provider, max_workers=10)
+    dataprovider = CachedWebDataProvider(provider, expire_days=0, quote=quotes)
+    df_list = dataprovider.get_data(tickers_list, start_date, end_date, max_workers=10)
 
     plot_vs_df = None
     if plot_vs:
-        plot_vs_df = dataprovider.get_data(plot_vs, from_date=start_date, to_date=end_date,
-                                        provider=provider)
+        plot_vs_df = dataprovider.get_data([plot_vs], from_date=start_date, to_date=end_date)[0]
     if function == 'hilo':
         hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
 

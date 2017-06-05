@@ -27,9 +27,9 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 @click.command(options_metavar='<options>')
-@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2005-01-01\'',
+@click.option('--start', type=click.STRING, help='Starting year, e.g. \'2010-01-01\'',
               default='2010-01-01')
-@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2015-12-31\'',
+@click.option('--end', type=click.STRING, help='Ending year, e.g. \'2016-12-31\'',
               default='2016-12-31')
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
 @click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
@@ -76,7 +76,8 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
             if plot_vs:
                 plot_vs_start = "{0}-01-01".format(datetime.datetime.now().year)
                 plot_vs_end = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
-                plot_vs_df = data_provider.get_data(plot_vs, plot_vs_start, plot_vs_end, provider=provider)['Close']
+                plot_vs_df = data_provider.get_data([plot_vs], plot_vs_start, plot_vs_end)
+                plot_vs_df = plot_vs_df[0]['Close']
 
                 # Reindex the the plot_vs data to seasonality_data datetimes
                 new_index = seasonlity_data.index[0:len(plot_vs_df)]

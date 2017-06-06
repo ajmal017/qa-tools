@@ -22,9 +22,9 @@ import pandas as pd
 
 from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis import seasonality
+from qa_dataprovider.quandl_dataprovider import QuandlFileDataProvider
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
-
 
 @click.command(options_metavar='<options>')
 @click.option('--start', type=click.STRING, help='Starting year, e.g. \'2010-01-01\'',
@@ -32,16 +32,27 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 @click.option('--end', type=click.STRING, help='Ending year, e.g. \'2016-12-31\'',
               default='2016-12-31')
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
-@click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
+@click.option('--provider', type=click.Choice(['yahoo', 'google', 'quandl']), default='google')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize in same plot, e.g. \'SPY\'')
 @click.option('--monthly', is_flag=True, help='Subplot seasonality per month')
 @click.option('--plot-label', type=click.Choice(['day', 'calendar']), default='calendar',
               help='Label for x-axis. Use \'Day\' for trading day of year')
-def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, monthly):
+@click.option('-v', '--verbose', count=True)
+def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, monthly, verbose):
     click.echo("Seasonality for {0}".format(ticker))
 
-    data_provider = CachedWebDataProvider(provider, expire_days=0)
-    df = data_provider.get_data([ticker], start, end)[0]
+    if provider == 'quandl':
+        data_provider = QuandlFileDataProvider(['quandl/iwm','quandl/spy','quandl/ndx'])
+    else:
+        data_provider = CachedWebDataProvider(provider, expire_days=0)
+
+    dataframes = data_provider.get_data([ticker], start, end)
+
+    if len(dataframes) == 0:
+        click.echo("Found no data for {}. Exiting.".format(ticker))
+        return
+    else:
+        df = dataframes[0]
 
     if monthly:
         rebased_dataframes = [df for df in seasonality.seasonality_monthly_returns(df)]

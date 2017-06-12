@@ -24,9 +24,7 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
 @click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
-@click.option('--quotes', is_flag=True,
-              help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
-def main(function, start, end, tickers, file, provider, quotes):
+def main(function, start, end, tickers, file, provider):
     """Simple tool (based on https://github.com/pmorissette/ffn) for intermarket analysis.
 
     <function>: Available analysis methods:
@@ -39,12 +37,12 @@ def main(function, start, end, tickers, file, provider, quotes):
 
     """
 
-    start_date, end_date = argutils.parse_dates(start, end)
+    start_date, end_date, get_quotes = argutils.parse_dates(start, end)
     tickers = argutils.tickers_list(file, tickers)
 
     click.echo("Fetching data for {0} tickers".format(len(tickers)))
 
-    data_provider = CachedWebDataProvider(provider, expire_days=0, quote=quotes)
+    data_provider = CachedWebDataProvider(provider, expire_days=0, quote=get_quotes)
     df_list = data_provider.get_data(tickers, start_date, end_date, max_workers=10)
 
     closes = []

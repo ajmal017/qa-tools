@@ -152,12 +152,10 @@ def hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
 @click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
-@click.option('--quotes', is_flag=True,
-              help='Add intraday (possibly delayed) quotes, e.g. for analyzing during market opening hours')
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize breadth, e.g. \'SPY\'')
 @click.option('--plot-pct-levels', default='20,30,40', type=click.STRING,
               help='Comma separated list, e.g. \'75,90\' to visulize when 75% and 90% of stocks making 20-Day highs/lows')
-def main(function, lookback, start, end, tickers, file, provider, quotes, plot_vs, plot_pct_levels):
+def main(function, lookback, start, end, tickers, file, provider, plot_vs, plot_pct_levels):
     """
     Tool for analyzing and plotting market internals
 

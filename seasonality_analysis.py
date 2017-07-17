@@ -9,6 +9,8 @@ import matplotlib
 import matplotlib.dates as mdates
 from matplotlib.ticker import MultipleLocator
 
+from utils.context import Context
+
 try:
     import tkinter  # should fail on AWS images with no GUI available
     import matplotlib.pyplot as plt
@@ -22,7 +24,8 @@ import pandas as pd
 
 from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis import seasonality
-from qa_dataprovider.quandl_dataprovider import QuandlFileDataProvider
+from qa_dataprovider.csv_dataprovider import CsvFileDataProvider
+from qa_dataprovider import AVAILABLE_PROVIDERS
 
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
@@ -32,21 +35,19 @@ logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 @click.option('--end', type=click.STRING, help='Ending year, e.g. \'2016-12-31\'',
               default='2016-12-31')
 @click.option('--ticker', default=False, help='Ticker to analyze, e.g. \'SPY\'')
-@click.option('--provider', type=click.Choice(['yahoo', 'google', 'quandl']), default='google')
+@click.option('--provider', type=click.Choice(AVAILABLE_PROVIDERS),
+              default='google',
+              help='Default is "google".See qa-dataprovider lib for more info'.format(AVAILABLE_PROVIDERS))
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize in same plot, e.g. \'SPY\'')
 @click.option('--monthly', is_flag=True, help='Subplot seasonality per month')
 @click.option('--plot-label', type=click.Choice(['day', 'calendar']), default='calendar',
               help='Label for x-axis. Use \'Day\' for trading day of year')
-@click.option('-v', '--verbose', count=True)
+@click.option('-v', '--verbose',count=True, help="'v' for INFO (default). 'vv' for DEBUG.")
 def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, monthly, verbose):
-    click.echo("Seasonality for {0}".format(ticker))
+    click.echo("Seasonality for {}".format(ticker))
 
-    if provider == 'quandl':
-        data_provider = QuandlFileDataProvider(['quandl/iwm','quandl/spy','quandl/ndx'])
-    else:
-        data_provider = CachedWebDataProvider(provider, expire_days=0)
-
-    dataframes = data_provider.get_data([ticker], start, end)
+    context = Context(start, end, ticker, None, provider, verbose)
+    dataframes = context.data_frames
 
     if len(dataframes) == 0:
         click.echo("Found no data for {}. Exiting.".format(ticker))
@@ -87,13 +88,17 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
             if plot_vs:
                 plot_vs_start = "{0}-01-01".format(datetime.datetime.now().year)
                 plot_vs_end = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
-                plot_vs_df = data_provider.get_data([plot_vs], plot_vs_start, plot_vs_end)
-                plot_vs_df = plot_vs_df[0]['Close']
+                plot_vs_df = context.data_provider.get_data([plot_vs], plot_vs_start,
+                                                            plot_vs_end)
+                if len(plot_vs_df) == 0:
+                    click.echo("No dataframe for {}. Exiting.".format(plot_vs))
+                    return
+                plot_vs_df_close = plot_vs_df[0]['Close']
 
                 # Reindex the the plot_vs data to seasonality_data datetimes
-                new_index = seasonlity_data.index[0:len(plot_vs_df)]
-                col = "{0} until {1}".format(plot_vs, plot_vs_end)
-                df = pd.DataFrame(plot_vs_df.values, index=new_index, columns=[col])
+                new_index = seasonlity_data.index[0:len(plot_vs_df_close)]
+                col = "{} {} to {}".format(plot_vs, plot_vs_start, plot_vs_df_close.index[-1].date())
+                df = pd.DataFrame(plot_vs_df_close.values, index=new_index, columns=[col])
                 df = seasonality.normalize(df).apply(seasonality.rebase)
 
                 ax.plot(df, label=col)
@@ -118,11 +123,17 @@ def seasonality_analysis(ticker, provider, start, end, plot_vs, plot_label, mont
             if plot_vs:
                 plot_vs_start = "{0}-01-01".format(datetime.datetime.now().year)
                 plot_vs_end = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
-                plot_vs_df = data_provider.get_data(plot_vs, plot_vs_start, plot_vs_end, provider=provider)
+                plot_vs_df = context.data_provider.get_data([plot_vs], plot_vs_start,
+                                                            plot_vs_end)
+                if len(plot_vs_df) == 0:
+                    click.echo("No dataframe for {}. Exiting.".format(plot_vs))
+                    return
 
+                plot_vs_df = plot_vs_df[0]
                 df = seasonality.trading_day_reindex(plot_vs_df, ticker, 'Close')
                 df = seasonality.normalize(df).apply(seasonality.rebase_days)
-                col = "{0} until {1}".format(plot_vs, plot_vs_end)
+
+                col = "{} {} to {}".format(plot_vs, plot_vs_start, plot_vs_df.index[-1].date())
                 ax.plot(df, label=col)
                 title = "{0} Seasonality vs {0}".format(ticker)
 

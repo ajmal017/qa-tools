@@ -63,7 +63,6 @@ def main(function, start, end, tickers, file, provider, verbose):
         plt.show()
 
     elif function == 'average':
-
         col = "Close"
         tickers = "Average: " + ", ".join([df['Ticker'][0] for df in df_list])
         rebased_merged = ffn.core.merge(*[ffn.core.rebase(c) for c in closes])

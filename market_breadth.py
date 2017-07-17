@@ -8,19 +8,21 @@ import pandas as pd
 
 import matplotlib
 
+from utils.context import Context
+
 try:
     import tkinter  # should fail on AWS images with no GUI available
     import matplotlib.pyplot as plt
 except:
     matplotlib.use('Agg')
 
+from qa_dataprovider import AVAILABLE_PROVIDERS
 from technical_analysis import ta
 import technical_analysis.column_names as ta_columns
 from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis.market_internal import MarketInternals
 from utils import argutils
 
-logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 
 def do_plot(df, ticker, lower_column, higher_column, pct_levels, title):
@@ -151,11 +153,14 @@ def hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_
 @click.option('--end', default="today", help='ending date')
 @click.option('--tickers', default=False, help='Comma separated list of tickers')
 @click.option('--file', type=click.Path(exists=True), help="Read tickers from file")
-@click.option('--provider', type=click.Choice(['yahoo', 'google']), default='google')
+@click.option('--provider', type=click.Choice(AVAILABLE_PROVIDERS),
+              default='google',
+              help='Default is "google".See qa-dataprovider lib for more info'.format(AVAILABLE_PROVIDERS))
 @click.option('--plot-vs', type=click.STRING, help='Which Stock/ETF to visualize breadth, e.g. \'SPY\'')
 @click.option('--plot-pct-levels', default='20,30,40', type=click.STRING,
               help='Comma separated list, e.g. \'75,90\' to visulize when 75% and 90% of stocks making 20-Day highs/lows')
-def main(function, lookback, start, end, tickers, file, provider, plot_vs, plot_pct_levels):
+@click.option('-v', '--verbose',count=True, help="'v' for INFO (default). 'vv' for DEBUG.")
+def main(function, lookback, start, end, tickers, file, provider, plot_vs, plot_pct_levels, verbose):
     """
     Tool for analyzing and plotting market internals
 
@@ -168,25 +173,23 @@ def main(function, lookback, start, end, tickers, file, provider, plot_vs, plot_
     'dma': calculate number of stocks below/above any moving average.
 
     """
-    start_date, end_date, get_quotes = argutils.parse_dates(start, end)
-    tickers_list  = argutils.tickers_list(file, tickers)
+    context = Context(start, end, tickers, file, provider, verbose)
+    df_list = context.data_frames
 
-    click.echo("Fetching data for {:d} tickers".format(len(tickers_list)))
-
-    dataprovider = CachedWebDataProvider(provider, expire_days=0, quotes=get_quotes)
-    df_list = dataprovider.get_data(tickers_list, start_date, end_date, max_workers=10)
-
+    click.echo("Fetching data for {:d} tickers".format(len(df_list)))
+    
     plot_vs_df = None
     if plot_vs:
-        plot_vs_df = dataprovider.get_data([plot_vs], from_date=start_date, to_date=end_date)[0]
+        plot_vs_df = context.data_provider.get_data([plot_vs], from_date=context.start_date,
+                                                    to_date=context.end_date)[0]
     if function == 'hilo':
-        hilo_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
+        hilo_analysis(lookback, context.start_date, context.end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
 
     if function == 'dma':
         # Similar to SPXA50R http://stockcharts.com/h-sc/ui?s=$SPXA50R
-        dma_analysis(lookback, start_date, end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
+        dma_analysis(lookback, context.start_date, context.end_date, df_list, plot_vs_df, plot_pct_levels.split(","))
 
-    if dataprovider.errors > 0:
+    if context.data_provider.errors > 0:
         logger.warning("Missing data for {:d} tickers.".format(provider.errors))
 
 

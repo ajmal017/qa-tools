@@ -8,7 +8,6 @@ def get_tickers(file):
         return [ticker.rstrip() for ticker in f.readlines()]
 
 
-# TODO: move to qa_tools.utils
 def parse_dates(start, end):
     """
     Parse and verify dates and return as string

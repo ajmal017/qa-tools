@@ -9,7 +9,6 @@ import pandas as pd
 from technical_analysis import ta
 import technical_analysis.column_names as ta_names
 
-# TODO: set logger level using parameter
 logger.basicConfig(level=logger.INFO, format='%(filename)s: %(message)s')
 
 

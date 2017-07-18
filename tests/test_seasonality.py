@@ -3,15 +3,15 @@
 
 import unittest
 
-from qa_dataprovider.web_dataprovider import CachedDataProvider
+from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from technical_analysis.seasonality import Seasonality
 
 
 class TestSeasonality(unittest.TestCase):
-    local_provider = CachedDataProvider(cache_name='tests', expire_days=0, trading_days=True)
+    local_provider = CachedWebDataProvider('google', cache_name='tests', expire_days=0, trading_days=True)
 
     def test_average_return(self):
-        spy_daily = self.local_provider.get_data(ticker="spy", from_date='2010-01-01', to_date='2016-01-01')
+        spy_daily = self.local_provider.get_data(['SPY'], from_date='2010-01-01', to_date='2016-01-01')[0]
         s = Seasonality("SPY", spy_daily)
 
         # Bullish Nov to May

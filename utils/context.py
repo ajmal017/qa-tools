@@ -6,7 +6,6 @@ import logging
 
 from qa_dataprovider.web_dataprovider import CachedWebDataProvider
 from qa_dataprovider.csv_dataprovider import CsvFileDataProvider
-from qa_dataprovider.ib_dataprovider import IBDataProvider
 from utils import argutils
 
 

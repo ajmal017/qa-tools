@@ -3,6 +3,7 @@
 
 
 #### TODO: technical_analysis/market_internal.py
+* plot multiple calculations e.g % > 50DMA, % > 100DMA, % > 200DMA
 * use ffn.utils.memoize for all intensive functions
 * https://github.com/shaypal5/cachier
 * https://github.com/joblib/joblib
